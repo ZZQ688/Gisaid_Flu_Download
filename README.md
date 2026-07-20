@@ -9,6 +9,8 @@
 ├── configs/
 │   ├── example.yaml          # 可提交的脱敏配置模板
 │   └── local/                # 本地配置，Git 忽略
+├── skills/
+│   └── gisaid-sequence-download/ # 项目级序列下载技能
 ├── src/gisaid_flu_download/
 │   ├── downloader.py         # EpiFlu 下载流程
 │   ├── merger.py             # Metadata/FASTA 合并工具
@@ -48,8 +50,9 @@ cp configs/example.yaml configs/local/H1N1.yaml
 - `runtime.download_root`：本次任务的输出目录；相对路径以启动命令所在目录为基准。
 - `filters`：病毒类型、H/N 亚型、B 型谱系、宿主、提交实验室和片段。
 - `dates.collection_date`：待下载的完整日期范围。
-- `dates.date_ranges`：非空时直接采用这些区间；为空时按 `max_strains_per_range` 自动拆分。
+- `dates.date_ranges`：非空时直接采用这些区间；为空时按 `max_strains_per_range` 自动拆分，成功后原子写回当前 YAML。
 - `options`：控制 Metadata、DNA、Protein 和人工验证。
+- `runtime.step_retries` 与 `runtime.retry_delay_sec`：控制 Selenium 步骤和自动日期拆分的重试次数与间隔。
 
 首次运行或需要验证码时，建议设置 `headless: false` 和 `require_manual_validation: true`。
 
@@ -60,6 +63,8 @@ cp configs/example.yaml configs/local/H1N1.yaml
 ```bash
 gisaid-run configs/local/H1N1.yaml
 ```
+
+同一配置可以安全重跑。程序按日期区间检查启用类型的目标文件：非空文件视为已完成并跳过，缺失或空文件会重新下载。因此中断后直接再次执行同一命令即可续传；不要在任务运行期间并发使用同一输出目录。
 
 也可以通过 `python -m gisaid_flu_download <配置文件>` 运行同一流水线。需要运行其他亚型时，分别再次调用；需要单独重跑某一步时，使用：
 

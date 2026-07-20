@@ -6,6 +6,11 @@ credentials:
 runtime:
   download_root: "./data/H1N1"
   headless: false
+  page_timeout_sec: 40
+  download_timeout_sec: 1800
+  poll_interval_sec: 5
+  step_retries: 3
+  retry_delay_sec: 5
 
 filters:
   virus_type: "A"
@@ -26,4 +31,3 @@ options:
   download_protein: true
   download_metadata: true
   require_manual_validation: false
-

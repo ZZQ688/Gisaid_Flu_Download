@@ -5,6 +5,8 @@ import logging
 import os
 import re
 import shutil
+import stat
+import tempfile
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -97,16 +99,38 @@ class DownloadConfig:
         if not self.date_ranges and not self.collection_date:
             raise ValueError("date_ranges 与 collection_date 至少提供一个。")
 
+        collection_bounds: Optional[Tuple[datetime, datetime]] = None
         if self.collection_date:
-            _parse_date(self.collection_date[0])
-            _parse_date(self.collection_date[1])
+            collection_start = _parse_date(self.collection_date[0])
+            collection_end = _parse_date(self.collection_date[1])
+            if collection_start > collection_end:
+                raise ValueError("collection_date 起始日期不能晚于结束日期。")
+            collection_bounds = (collection_start, collection_end)
 
+        previous_end: Optional[datetime] = None
         for s, e in self.date_ranges:
-            _parse_date(s)
-            _parse_date(e)
+            start = _parse_date(s)
+            end = _parse_date(e)
+            if start > end:
+                raise ValueError(f"date_ranges 起始日期不能晚于结束日期: {s} - {e}")
+            if previous_end is not None and start <= previous_end:
+                raise ValueError("date_ranges 必须按日期升序排列且不能重叠。")
+            if collection_bounds is not None and not (
+                collection_bounds[0] <= start <= end <= collection_bounds[1]
+            ):
+                raise ValueError(f"date_ranges 超出 collection_date: {s} - {e}")
+            previous_end = end
 
         if self.max_strains_per_range <= 0:
             raise ValueError("max_strains_per_range 必须为正整数。")
+        if self.page_timeout_sec <= 0 or self.download_timeout_sec <= 0:
+            raise ValueError("页面和下载超时必须为正整数。")
+        if self.poll_interval_sec <= 0:
+            raise ValueError("poll_interval_sec 必须为正整数。")
+        if self.step_retries <= 0:
+            raise ValueError("step_retries 必须为正整数。")
+        if self.retry_delay_sec < 0:
+            raise ValueError("retry_delay_sec 不能为负数。")
 
 
 def _parse_date(date_str: str) -> datetime:
@@ -133,6 +157,53 @@ def _safe_move(src: Path, dst: Path) -> Path:
             shutil.move(str(src), str(candidate))
             return candidate
     raise GisaidDownloadError(f"目标文件名冲突过多，无法移动到: {dst}")
+
+
+def _write_date_ranges(
+    config_path: Path, ranges: Sequence[Tuple[str, str]]
+) -> None:
+    """Atomically persist successfully calculated date ranges."""
+    resolved_path = config_path.expanduser().resolve()
+    try:
+        with resolved_path.open("r", encoding="utf-8") as config_file:
+            raw = yaml.safe_load(config_file) or {}
+        if not isinstance(raw, dict):
+            raise ValueError("配置顶层必须是映射。")
+
+        dates = raw.setdefault("dates", {})
+        if not isinstance(dates, dict):
+            raise ValueError("dates 必须是映射。")
+        dates["date_ranges"] = [[start, end] for start, end in ranges]
+
+        original_mode = stat.S_IMODE(resolved_path.stat().st_mode)
+        temporary_path: Optional[Path] = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                "w",
+                encoding="utf-8",
+                dir=resolved_path.parent,
+                prefix=f".{resolved_path.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as temporary_file:
+                temporary_path = Path(temporary_file.name)
+                yaml.safe_dump(
+                    raw,
+                    temporary_file,
+                    allow_unicode=True,
+                    sort_keys=False,
+                )
+                temporary_file.flush()
+                os.fsync(temporary_file.fileno())
+            temporary_path.chmod(original_mode)
+            os.replace(temporary_path, resolved_path)
+        finally:
+            if temporary_path is not None and temporary_path.exists():
+                temporary_path.unlink()
+    except (OSError, TypeError, ValueError, yaml.YAMLError) as exc:
+        raise GisaidDownloadError(
+            f"自动日期分段已完成，但写回配置失败: {resolved_path}: {exc}"
+        ) from exc
 
 
 class GisaidEpiFluDownloader:
@@ -176,9 +247,14 @@ class GisaidEpiFluDownloader:
         "//span[contains(text(),'Remove spaces before and after values in FASTA header')]/preceding-sibling::input",
     )
 
-    def __init__(self, config: DownloadConfig) -> None:
+    def __init__(
+        self, config: DownloadConfig, *, config_path: Optional[Path] = None
+    ) -> None:
         config.validate()
         self.cfg = config
+        self.config_path = (
+            config_path.expanduser().resolve() if config_path is not None else None
+        )
 
         self.meta_dir = self.cfg.download_root / "meta"
         self.dna_dir = self.cfg.download_root / "DNA"
@@ -206,12 +282,18 @@ class GisaidEpiFluDownloader:
             self._run_step(self._open_epiflu_search, "open_epiflu_search")
             self._run_step(self._apply_filters, "apply_filters")
 
-            ranges = list(self.cfg.date_ranges) or self._auto_split_ranges()
+            ranges = self._resolve_date_ranges()
             total_ranges = len(ranges)
             LOG.info("将下载 %d 个时间区间。", total_ranges)
 
             for idx, (start, end) in enumerate(ranges, 1):
                 tag = f"{start}-{end}"
+                pending_meta, pending_dna, pending_protein = self._pending_downloads(
+                    start, end
+                )
+                if not any((pending_meta, pending_dna, pending_protein)):
+                    LOG.info("[跳过] 区间 %s 的所选文件均已下载。", tag)
+                    continue
 
                 # 日志友好的进度条渲染
                 percent = int((idx / total_ranges) * 100)
@@ -231,22 +313,44 @@ class GisaidEpiFluDownloader:
                 self._run_step(self._select_all_results, f"select_all[{tag}]")
 
                 # 下载 Metadata
-                if self.cfg.download_metadata:
-                    self._run_step(self._open_download_dialog, f"open_download_dialog_meta[{tag}]")
-                    self._run_step(lambda: self._download_metadata(start, end), f"download_metadata[{tag}]")
-                    self._run_step(self._go_back_to_results, f"go_back_to_results_after_meta[{tag}]")
+                if pending_meta:
+                    self._run_step(
+                        self._open_download_dialog,
+                        f"open_download_dialog_meta[{tag}]",
+                    )
+                    self._run_step(
+                        lambda: self._download_metadata(start, end),
+                        f"download_metadata[{tag}]",
+                    )
+                    self._run_step(
+                        self._go_back_to_results,
+                        f"go_back_to_results_after_meta[{tag}]",
+                    )
 
                 # 下载 Fasta (DNA / Protein)
-                if self.cfg.download_dna or self.cfg.download_protein:
-                    self._run_step(self._open_download_dialog, f"open_download_dialog_seq[{tag}]")
-                    if self.cfg.download_dna:
-                        self._run_step(lambda: self._download_fasta(start, end, kind="dna"), f"download_dna[{tag}]")
-                    if self.cfg.download_protein:
-                        self._run_step(lambda: self._download_fasta(start, end, kind="protein"),
-                                       f"download_protein[{tag}]")
+                if pending_dna or pending_protein:
+                    self._run_step(
+                        self._open_download_dialog,
+                        f"open_download_dialog_seq[{tag}]",
+                    )
+                    if pending_dna:
+                        self._run_step(
+                            lambda: self._download_fasta(start, end, kind="dna"),
+                            f"download_dna[{tag}]",
+                        )
+                    if pending_protein:
+                        self._run_step(
+                            lambda: self._download_fasta(
+                                start, end, kind="protein"
+                            ),
+                            f"download_protein[{tag}]",
+                        )
 
                     LOG.info("dna/protein %s done", tag)
-                    self._run_step(self._go_back_to_results, f"go_back_to_results_after_seq[{tag}]")
+                    self._run_step(
+                        self._go_back_to_results,
+                        f"go_back_to_results_after_seq[{tag}]",
+                    )
 
                 # 从结果列表返回到搜索配置页，为下一个时间区间做准备
                 self._run_step(self._go_back_to_search_page, f"go_back_to_search_page[{tag}]")
@@ -464,6 +568,45 @@ class GisaidEpiFluDownloader:
 
     # ---------------------- Date splitting ----------------------
 
+    def _resolve_date_ranges(self) -> list[Tuple[str, str]]:
+        if self.cfg.date_ranges:
+            return list(self.cfg.date_ranges)
+
+        ranges = list(self._auto_split_ranges_with_retries())
+        if self.config_path is None:
+            LOG.warning("未提供配置路径，自动日期分段不会写回 YAML。")
+        else:
+            _write_date_ranges(self.config_path, ranges)
+            LOG.info("自动日期分段已写回配置: %s", self.config_path)
+        return ranges
+
+    def _auto_split_ranges_with_retries(self) -> Sequence[Tuple[str, str]]:
+        retryable_errors = (
+            GisaidDownloadError,
+            TimeoutException,
+            StaleElementReferenceException,
+            NoSuchElementException,
+            WebDriverException,
+        )
+        last_exc: Optional[Exception] = None
+        for attempt in range(1, self.cfg.step_retries + 1):
+            try:
+                return self._auto_split_ranges()
+            except retryable_errors as exc:
+                last_exc = exc
+                self._count_viruses_cached.cache_clear()
+                LOG.warning(
+                    "自动日期分段失败 (attempt %d/%d): %s",
+                    attempt,
+                    self.cfg.step_retries,
+                    exc,
+                )
+                if attempt < self.cfg.step_retries:
+                    time.sleep(self.cfg.retry_delay_sec)
+        raise StepFailed(
+            f"自动日期分段连续失败 {self.cfg.step_retries} 次。"
+        ) from last_exc
+
     def _auto_split_ranges(self) -> Sequence[Tuple[str, str]]:
         assert self.cfg.collection_date is not None
         start, end = self.cfg.collection_date
@@ -471,7 +614,7 @@ class GisaidEpiFluDownloader:
         yaml_lines = [
             "",
             "#" + "=" * 50,
-            "# Completed automatically! Please directly copy and paste the following content into config.yaml under date_ranges:",
+            "# 自动日期分段结果（成功后写回当前配置的 date_ranges）:",
             "#" + "=" * 50
         ]
         for s_str, e_str in ranges:
@@ -483,7 +626,9 @@ class GisaidEpiFluDownloader:
         LOG.info("自动分段完成：%d 段。", len(ranges))
         return ranges
 
-    def _split_ranges_by_max_strains(self, start: str, end: str, max_strains: int) -> Sequence[Tuple[str, str]]:
+    def _split_ranges_by_max_strains(
+        self, start: str, end: str, max_strains: int
+    ) -> Sequence[Tuple[str, str]]:
         start_dt = _parse_date(start)
         end_dt = _parse_date(end)
 
@@ -493,16 +638,31 @@ class GisaidEpiFluDownloader:
             total = self._count_viruses_cached(s, e)
             if total <= max_strains:
                 return [(s_dt, e_dt, total)]
+            if s_dt.date() == e_dt.date():
+                raise GisaidDownloadError(
+                    f"单日 {s} 包含 {total} 条记录，超过每段上限 {max_strains}，"
+                    "无法继续拆分。"
+                )
 
-            mid = s_dt + (e_dt - s_dt) / 2
+            mid = s_dt + timedelta(days=(e_dt - s_dt).days // 2)
             left_s, left_e = s_dt, mid
             right_s, right_e = mid + timedelta(days=1), e_dt
 
-            left_total = self._count_viruses_cached(left_s.strftime("%Y-%m-%d"), left_e.strftime("%Y-%m-%d"))
+            left_total = self._count_viruses_cached(
+                left_s.strftime("%Y-%m-%d"), left_e.strftime("%Y-%m-%d")
+            )
             right_total = total - left_total
 
-            left_parts = rec(left_s, left_e) if left_total > max_strains else [(left_s, left_e, left_total)]
-            right_parts = rec(right_s, right_e) if right_total > max_strains else [(right_s, right_e, right_total)]
+            left_parts = (
+                rec(left_s, left_e)
+                if left_total > max_strains
+                else [(left_s, left_e, left_total)]
+            )
+            right_parts = (
+                rec(right_s, right_e)
+                if right_total > max_strains
+                else [(right_s, right_e, right_total)]
+            )
             return [*left_parts, *right_parts]
 
         parts = rec(start_dt, end_dt)
@@ -521,13 +681,53 @@ class GisaidEpiFluDownloader:
         out = [(s.strftime("%Y-%m-%d"), e.strftime("%Y-%m-%d")) for s, e, _ in merged]
         return out
 
+    def _pending_downloads(self, start: str, end: str) -> Tuple[bool, bool, bool]:
+        tag = f"{start}-{end}"
+
+        def pending(enabled: bool, path: Path, label: str) -> bool:
+            if not enabled:
+                return False
+            try:
+                if path.is_file() and path.stat().st_size > 0:
+                    LOG.info("[跳过] 已存在 %s 文件: %s", label, path)
+                    return False
+                if path.exists():
+                    LOG.warning("发现空的 %s 文件，将重新下载: %s", label, path)
+                    path.unlink()
+            except OSError as exc:
+                raise GisaidDownloadError(
+                    f"检查已有下载文件失败: {path}: {exc}"
+                ) from exc
+            return True
+
+        return (
+            pending(
+                self.cfg.download_metadata,
+                self.meta_dir / f"{tag}.xls",
+                "Metadata",
+            ),
+            pending(
+                self.cfg.download_dna,
+                self.dna_dir / f"{tag}.fasta",
+                "DNA",
+            ),
+            pending(
+                self.cfg.download_protein,
+                self.protein_dir / f"{tag}.fasta",
+                "Protein",
+            ),
+        )
+
     def _count_viruses_uncached(self, start: str, end: str) -> int:
         self._set_collection_dates(start, end)
         info = self._wait_present(*self._SEL_TOTAL_INFO, timeout=30).text
         m = re.search(r"Total:\s*(.+)\s*viruses", info)
         if not m:
             raise GisaidDownloadError(f"无法解析病毒数量文本: {info!r}")
-        return int(m.group(1).replace(",", ""))
+        try:
+            return int(m.group(1).replace(",", ""))
+        except ValueError as exc:
+            raise GisaidDownloadError(f"无法解析病毒数量文本: {info!r}") from exc
 
     # ---------------------- Driver Creation (Edge Only) ----------------------
 
@@ -575,9 +775,18 @@ class GisaidEpiFluDownloader:
                 WebDriverException,
             ) as exc:
                 last_exc = exc
-                LOG.warning("步骤失败: %s (attempt %d/%d): %s", name, attempt, self.cfg.step_retries, exc)
-                time.sleep(self.cfg.retry_delay_sec)
-        raise StepFailed(f"步骤 {name} 连续失败 {self.cfg.step_retries} 次。") from last_exc
+                LOG.warning(
+                    "步骤失败: %s (attempt %d/%d): %s",
+                    name,
+                    attempt,
+                    self.cfg.step_retries,
+                    exc,
+                )
+                if attempt < self.cfg.step_retries:
+                    time.sleep(self.cfg.retry_delay_sec)
+        raise StepFailed(
+            f"步骤 {name} 连续失败 {self.cfg.step_retries} 次。"
+        ) from last_exc
 
     def _filter_select_by_multi_index(self, index: int) -> Select:
         tds = WebDriverWait(self.driver, 20).until(lambda d: d.find_elements(*self._SEL_FILTER_MULTI))
@@ -736,70 +945,124 @@ class GisaidEpiFluDownloader:
         return self._FrameCtx(self, name, timeout)
 
 
-def main() -> None:
+def _date_pair(value: object, label: str) -> Optional[Tuple[str, str]]:
+    if value in (None, []):
+        return None
+    if not isinstance(value, (list, tuple)) or len(value) != 2:
+        raise ValueError(f"{label} 必须包含两个 YYYY-MM-DD 日期。")
+    return str(value[0]), str(value[1])
+
+
+def load_download_config(config_file: Path) -> DownloadConfig:
+    """Load and validate one downloader YAML configuration."""
+    config_path = config_file.expanduser().resolve()
+    if not config_path.is_file():
+        raise FileNotFoundError(f"找不到配置文件: {config_path}")
+
+    with config_path.open("r", encoding="utf-8") as config_stream:
+        raw = yaml.safe_load(config_stream) or {}
+    if not isinstance(raw, dict):
+        raise ValueError("配置顶层必须是映射。")
+
+    sections = {}
+    for section_name in ("credentials", "runtime", "filters", "dates", "options"):
+        section = raw.get(section_name)
+        if section is None:
+            section = {}
+        if not isinstance(section, dict):
+            raise ValueError(f"{section_name} 必须是映射。")
+        sections[section_name] = section
+
+    credentials = sections["credentials"]
+    runtime = sections["runtime"]
+    filters = sections["filters"]
+    dates = sections["dates"]
+    options = sections["options"]
+
+    download_root_value = runtime.get("download_root")
+    if not download_root_value:
+        raise ValueError("配置缺少 runtime.download_root。")
+
+    collection_date = _date_pair(dates.get("collection_date"), "collection_date")
+    raw_ranges = dates.get("date_ranges") or []
+    if not isinstance(raw_ranges, list):
+        raise ValueError("date_ranges 必须是列表。")
+    date_ranges = []
+    for index, raw_range in enumerate(raw_ranges):
+        date_pair = _date_pair(raw_range, f"date_ranges[{index}]")
+        if date_pair is None:
+            raise ValueError(f"date_ranges[{index}] 不能为空。")
+        date_ranges.append(date_pair)
+
+    cfg = DownloadConfig(
+        username=str(credentials.get("username") or ""),
+        password=str(credentials.get("password") or ""),
+        download_root=Path(str(download_root_value)),
+        headless=bool(runtime.get("headless", False)),
+        virus_type=str(filters.get("virus_type", "A")),
+        h_types=filters.get("h_types", ["1"]),
+        n_types=filters.get("n_types", ["1"]),
+        b_lineages=filters.get("b_lineages", []),
+        hosts=filters.get("hosts", ["Human"]),
+        submit_labs=filters.get("submit_labs", []),
+        segments=filters.get("segments", ["HA"]),
+        collection_date=collection_date,
+        date_ranges=date_ranges,
+        max_strains_per_range=int(dates.get("max_strains_per_range", 20000)),
+        download_dna=bool(options.get("download_dna", False)),
+        download_protein=bool(options.get("download_protein", True)),
+        download_metadata=bool(options.get("download_metadata", True)),
+        require_manual_validation=bool(
+            options.get("require_manual_validation", False)
+        ),
+        page_timeout_sec=int(runtime.get("page_timeout_sec", 40)),
+        download_timeout_sec=int(runtime.get("download_timeout_sec", 1800)),
+        poll_interval_sec=int(runtime.get("poll_interval_sec", 5)),
+        step_retries=int(runtime.get("step_retries", 3)),
+        retry_delay_sec=int(runtime.get("retry_delay_sec", 5)),
+    )
+    cfg.validate()
+    return cfg
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
 
     # 创建控制台处理器
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    console_handler.setFormatter(
+        logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+    )
     root_logger.addHandler(console_handler)
 
     # argparse 解析位置参数
     parser = argparse.ArgumentParser(description="GISAID EpiFlu Download")
-    parser.add_argument("config_file", type=str, help="YAML dir(eg. config.yaml)")
-    args = parser.parse_args()
+    parser.add_argument("config_file", type=Path, help="YAML 配置文件")
+    args = parser.parse_args(argv)
 
-    # 读取并解析 YAML 文件
-    config_path = Path(args.config_file)
-    if not config_path.exists():
-        LOG.error("The configuration file cannot be found: %s", config_path)
-        return
+    try:
+        config_path = args.config_file.expanduser().resolve()
+        cfg = load_download_config(config_path)
+        cfg.download_root.mkdir(parents=True, exist_ok=True)
 
-    with config_path.open("r", encoding="utf-8") as f:
-        raw = yaml.safe_load(f)
+        log_file_path = cfg.download_root / "gisaid_run.log"
+        file_handler = logging.FileHandler(log_file_path, encoding="utf-8")
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        )
+        root_logger.addHandler(file_handler)
 
-    # 动态启用日志文件输出
-    download_root = Path(raw["runtime"]["download_root"]).expanduser().resolve()
-    download_root.mkdir(parents=True, exist_ok=True)
-
-    log_file_path = download_root / "gisaid_run.log"
-    file_handler = logging.FileHandler(log_file_path, encoding="utf-8")
-    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-    root_logger.addHandler(file_handler)
-
-    # 将 collection_date 从列表转换为 tuple
-    raw_coll_date = raw.get("dates", {}).get("collection_date")
-    collection_date_tuple = tuple(raw_coll_date) if raw_coll_date else None
-
-    # 将 date_ranges 内部的子列表也转换为 tuple 元组列表，并显式声明类型以消除静态警告
-    raw_ranges = raw.get("dates", {}).get("date_ranges") or []
-    date_ranges_list: list[tuple[str, str]] = [tuple(r) for r in raw_ranges]
-
-    # 实例化标准 DownloadConfig 对象
-    cfg = DownloadConfig(
-        username=raw["credentials"]["username"],
-        password=raw["credentials"]["password"],
-        download_root=download_root,
-        headless=raw["runtime"].get("headless", False),
-        virus_type=raw["filters"].get("virus_type", "A"),
-        h_types=raw["filters"].get("h_types", ['1']),
-        n_types=raw["filters"].get("n_types", ['1']),
-        b_lineages=raw["filters"].get("b_lineages", []),
-        hosts=raw["filters"].get("hosts", ['Human']),
-        submit_labs=raw["filters"].get("submit_labs", []),
-        segments=raw["filters"].get("segments", ["HA"]),
-        collection_date=collection_date_tuple,
-        date_ranges=date_ranges_list,
-        max_strains_per_range=raw["dates"].get("max_strains_per_range", 20000),
-        download_dna=raw["options"].get("download_dna", False),
-        download_protein=raw["options"].get("download_protein", True),
-        download_metadata=raw["options"].get("download_metadata", True),
-        require_manual_validation=raw["options"].get("require_manual_validation", False)
-    )
-    downloader = GisaidEpiFluDownloader(cfg)
-    downloader.run()
+        downloader = GisaidEpiFluDownloader(cfg, config_path=config_path)
+        downloader.run()
+    except KeyboardInterrupt:
+        LOG.warning("用户中断下载；重新运行同一配置将跳过已完成文件。")
+        return 130
+    except Exception as exc:
+        LOG.exception("下载失败: %s", exc)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
