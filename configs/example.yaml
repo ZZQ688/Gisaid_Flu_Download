@@ -1,0 +1,29 @@
+# Copy this file into configs/local/ and add your own account details.
+credentials:
+  username: "YOUR_GISAID_USERNAME"
+  password: "YOUR_GISAID_PASSWORD"
+
+runtime:
+  download_root: "./data/H1N1"
+  headless: false
+
+filters:
+  virus_type: "A"
+  h_types: ["1"]
+  n_types: ["1"]
+  b_lineages: []
+  hosts: ["Human"]
+  submit_labs: []
+  segments: ["all"]
+
+dates:
+  collection_date: ["2024-01-01", "2024-12-31"]
+  date_ranges: []
+  max_strains_per_range: 18000
+
+options:
+  download_dna: true
+  download_protein: true
+  download_metadata: true
+  require_manual_validation: false
+

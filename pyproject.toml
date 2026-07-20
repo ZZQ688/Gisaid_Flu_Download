@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gisaid-flu-download"
+version = "0.1.0"
+description = "Automate GISAID EpiFlu downloads and merge downloaded batches"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "selenium>=4.0",
+    "PyYAML>=6.0",
+    "pandas>=2.0",
+    "xlrd>=2.0",
+    "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+gisaid-download = "gisaid_flu_download.downloader:main"
+gisaid-merge = "gisaid_flu_download.merger:main"
+gisaid-run = "gisaid_flu_download.pipeline:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

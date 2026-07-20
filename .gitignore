@@ -1,0 +1,35 @@
+# Python bytecode and tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Virtual environments and editors
+.venv/
+venv/
+.idea/
+.vscode/
+.DS_Store
+
+# Private configuration
+.env
+.env.*
+!.env.example
+
+# Runtime output and browser downloads
+data/
+downloads/
+output/
+*.log
+*.crdownload
+*.part
+*.tmp
+*_meta.xlsx
+*_DNA_merged.fasta
+*_protein_merged.fasta
