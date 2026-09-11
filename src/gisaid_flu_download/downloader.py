@@ -19,6 +19,7 @@ from selenium import webdriver
 from selenium.common.exceptions import (
     ElementClickInterceptedException,
     InvalidSessionIdException,
+    NoAlertPresentException,
     NoSuchElementException,
     NoSuchFrameException,
     StaleElementReferenceException,
@@ -26,6 +27,7 @@ from selenium.common.exceptions import (
     WebDriverException,
 )
 from selenium.webdriver.common.by import By
+from urllib3.exceptions import ReadTimeoutError
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
@@ -215,10 +217,9 @@ class GisaidEpiFluDownloader:
     _SEL_LOGIN_BTN = (By.XPATH, "//input[@value='Login']")
     _SEL_TAB_EPIFLU = (By.LINK_TEXT, "EpiFlu™")
     _SEL_ACTIONBAR_ITEM = (By.CLASS_NAME, "sys-actionbar-action-ni")
-    _SEL_FILTER_TD = (By.CLASS_NAME, "sys-form-filine-td")
-    _SEL_FILTER_MULTI = (By.CLASS_NAME, "sys-form-fi-multiselect")
+    _SEL_FILTER_LABEL = "//div[contains(@class, 'sys-form-filabel') and normalize-space(.)='{label}']"
     _SEL_DATEPICKER = (By.CLASS_NAME, "hasDatepicker")
-    _SEL_TOTAL_INFO = (By.CLASS_NAME, "sys-form-fi-info")
+    _SEL_TOTAL_INFO = (By.XPATH, "//div[contains(@class, 'sys-form-fi-info') and contains(., 'Total:')]")
     _SEL_SEARCH_BTN = (By.XPATH, "//button[normalize-space(text())='Search']")
     _SEL_SELECT_ALL = (By.XPATH, "(//input)[2]")
     _SEL_PLEASE_WAIT = (By.XPATH, "//div[normalize-space(text())='Please wait...']")
@@ -389,35 +390,35 @@ class GisaidEpiFluDownloader:
 
     def _apply_filters(self) -> None:
         if self.cfg.submit_labs:
-            lab_select = self._filter_select_by_multi_index(8)
+            lab_select = self._filter_select_by_label("Submitting Laboratory")
             self._select_by_visible_text(lab_select, self.cfg.submit_labs)
 
         if self.cfg.hosts:
-            host_select = self._filter_select_by_td_index(5)
+            host_select = self._filter_select_by_label("Host")
             self._select_by_visible_text(host_select, self.cfg.hosts)
 
-        type_select = self._filter_select_by_td_index(0)
+        type_select = self._filter_select_by_label("Type")
         type_select.deselect_all()
         type_select.select_by_value(self.cfg.virus_type)
         self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
 
         if self.cfg.virus_type == "A":
             if self.cfg.h_types:
-                h_select = self._filter_select_by_td_index(1)
+                h_select = self._filter_select_by_label("H")
                 h_select.deselect_all()
                 for v in self.cfg.h_types:
                     h_select.select_by_value(v)
                     self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
 
             if self.cfg.n_types:
-                n_select = self._filter_select_by_td_index(2)
+                n_select = self._filter_select_by_label("N")
                 n_select.deselect_all()
                 for v in self.cfg.n_types:
                     n_select.select_by_value(v)
                     self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
 
         if self.cfg.virus_type == "B" and self.cfg.b_lineages:
-            b_select = self._filter_select_by_td_index(3)
+            b_select = self._filter_select_by_label("Lineage")
             b_select.deselect_all()
             for v in self.cfg.b_lineages:
                 b_select.select_by_value(v)
@@ -494,6 +495,7 @@ class GisaidEpiFluDownloader:
             self.driver.execute_script("arguments[0].click();", download_btn)
             LOG.info("Metadata 下载指令已发送...")
             time.sleep(2)
+            self._dismiss_alert_if_present()
         downloaded = self._wait_for_download(
             folder=self.cfg.download_root,
             name_contains="gisaid_epiflu",
@@ -533,6 +535,7 @@ class GisaidEpiFluDownloader:
             self.driver.execute_script("arguments[0].click();", download_btn)
             LOG.info("fasta 下载指令已发送...")
             time.sleep(2)
+            self._dismiss_alert_if_present()
 
         downloaded = self._wait_for_download(
             folder=self.cfg.download_root,
@@ -587,6 +590,7 @@ class GisaidEpiFluDownloader:
             StaleElementReferenceException,
             NoSuchElementException,
             WebDriverException,
+            ReadTimeoutError,
         )
         last_exc: Optional[Exception] = None
         for attempt in range(1, self.cfg.step_retries + 1):
@@ -773,6 +777,7 @@ class GisaidEpiFluDownloader:
                 NoSuchElementException,
                 InvalidSessionIdException,
                 WebDriverException,
+                ReadTimeoutError,
             ) as exc:
                 last_exc = exc
                 LOG.warning(
@@ -788,14 +793,38 @@ class GisaidEpiFluDownloader:
             f"步骤 {name} 连续失败 {self.cfg.step_retries} 次。"
         ) from last_exc
 
-    def _filter_select_by_multi_index(self, index: int) -> Select:
-        tds = WebDriverWait(self.driver, 20).until(lambda d: d.find_elements(*self._SEL_FILTER_MULTI))
-        if index >= len(tds):
-            raise GisaidDownloadError(f"筛选项 td index 越界: {index}, 实际={len(tds)}")
-        td = tds[index]
+    def _filter_select_by_label(self, label: str) -> Select:
+        """按标签文本定位对应的下拉框（select）。
 
+        GISAID 搜索页有两种标签布局：
+        - 单字段行（如 "Submitting Laboratory"）：label 与 select 同处一个 <tr>；
+        - 列式行（如 "Host"、"Type"、"H"、"N"、"Lineage"）：label 位于 label 行，
+          select 位于相邻的 control 行，二者按列索引对应。
+
+        先定位 text 为 label 的 div，再向上找到 td/tr；若该 tr 内含 select 直接返回，
+        否则按列索引到 control 行取同列 td 内的 select。
+        """
+        label_div = self._wait_present(
+            By.XPATH, self._SEL_FILTER_LABEL.format(label=label), timeout=20
+        )
+        label_td = label_div.find_element(By.XPATH, "./parent::td")
+        label_tr = label_td.find_element(By.XPATH, "./parent::tr")
+
+        if label_tr.find_elements(By.TAG_NAME, "select"):
+            return self._enabled_select_in(label_tr)
+
+        col_index = self._column_index(label_td)
+        control_tr = label_tr.find_element(By.XPATH, "./following-sibling::tr[1]")
+        control_tds = control_tr.find_elements(By.TAG_NAME, "td")
+        if col_index >= len(control_tds):
+            raise GisaidDownloadError(
+                f"筛选控件列索引越界: label={label!r}, index={col_index}, 实际={len(control_tds)}"
+            )
+        return self._enabled_select_in(control_tds[col_index])
+
+    def _enabled_select_in(self, container: WebElement) -> Select:
         def _find_enabled_select(_):
-            sel = td.find_element(By.TAG_NAME, "select")
+            sel = container.find_element(By.TAG_NAME, "select")
             if sel.get_attribute("disabled") is None:
                 return sel
             return None
@@ -803,20 +832,15 @@ class GisaidEpiFluDownloader:
         select_el = WebDriverWait(self.driver, 20).until(_find_enabled_select)
         return Select(select_el)
 
-    def _filter_select_by_td_index(self, index: int) -> Select:
-        tds = WebDriverWait(self.driver, 20).until(lambda d: d.find_elements(*self._SEL_FILTER_TD))
-        if index >= len(tds):
-            raise GisaidDownloadError(f"筛选项 td index 越界: {index}, 实际={len(tds)}")
-        td = tds[index]
-
-        def _find_enabled_select(_):
-            sel = td.find_element(By.TAG_NAME, "select")
-            if sel.get_attribute("disabled") is None:
-                return sel
-            return None
-
-        select_el = WebDriverWait(self.driver, 20).until(_find_enabled_select)
-        return Select(select_el)
+    def _column_index(self, cell: WebElement) -> int:
+        return int(
+            self.driver.execute_script(
+                "var n = arguments[0], i = 0;"
+                "while (n.previousElementSibling) { i += 1; n = n.previousElementSibling; }"
+                "return i;",
+                cell,
+            )
+        )
 
     def _select_by_visible_text(self, select: Select, values: Iterable[str]) -> None:
         for v in values:
@@ -831,6 +855,14 @@ class GisaidEpiFluDownloader:
             return
         finally:
             self.driver.switch_to.default_content()
+
+    def _dismiss_alert_if_present(self) -> None:
+        """关闭可能出现的原生 alert/confirm 弹窗（如下载确认框），避免其阻塞后续 WebDriver 命令。"""
+        try:
+            self.driver.switch_to.alert.accept()
+            LOG.info("已关闭页面弹出确认框。")
+        except NoAlertPresentException:
+            return
 
     def _select_segments(self, segments: Sequence[str]) -> None:
         segments_norm = [s.strip() for s in segments if s and s.strip()]
