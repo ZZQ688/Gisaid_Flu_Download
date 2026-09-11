@@ -1,37 +1,69 @@
 # Copy this file into configs/local/ and add your own account details.
+# Real credentials must never be committed; configs/local/ is Git-ignored.
+
 credentials:
+  # GISAID account used for EpiFlu access.
   username: YOUR_GISAID_USERNAME
   password: YOUR_GISAID_PASSWORD
 
 runtime:
+  # Output directory for this job. Relative paths resolve against the directory
+  # where the command is launched. Use one dedicated root per job.
   download_root: "./data/H1N1"
+  # Run the browser invisibly. Set false when a CAPTCHA or login check may appear.
   headless: false
+  # Browser page timeout in seconds.
   page_timeout_sec: 40
+  # Maximum wait (seconds) for a single browser download to finish.
   download_timeout_sec: 1800
+  # How often (seconds) to poll for a completed download.
   poll_interval_sec: 5
+  # Retry count for Selenium steps and automatic date splitting.
   step_retries: 3
+  # Delay (seconds) between retries.
   retry_delay_sec: 5
 
 filters:
+  # "A" or "B". For A set h_types/n_types; for B set b_lineages.
   virus_type: "A"
+  # H subtype values (e.g. "1"); empty list selects all.
   h_types: ["1"]
+  # N subtype values (e.g. "1"); empty list selects all.
   n_types: ["1"]
+  # Influenza B lineage values (e.g. "Victoria"); only used when virus_type is "B".
   b_lineages: []
+  # Hosts to filter by visible text (e.g. "Human"). Empty list applies no host filter.
   hosts: ["Human"]
+  # Submitting laboratories to filter by visible text. Empty list applies no lab filter.
   submit_labs: []
+  # Continent-level locations to filter by visible text (e.g. "Africa", "Asia",
+  # "Europe", "North America"). Empty list applies no location filter.
   locations: []
+  # Check the "TPE submissions" filter on the search page.
   tpe_submissions: false
+  # Segments to download: "all" or specific values (e.g. ["HA"]).
   segments: ["all"]
 
 dates:
+  # Full collection date range to download, [start, end] in YYYY-MM-DD.
   collection_date: ["2024-01-01", "2024-12-31"]
+  # Leave empty to auto-split by max_strains_per_range; on success the calculated
+  # ranges are atomically written back into this file. Populate manually to use
+  # fixed ranges.
   date_ranges: []
+  # Maximum strains per download batch; keep below the GISAID batch limit.
   max_strains_per_range: 18000
 
 options:
+  # Download and merge DNA sequences.
   download_dna: true
+  # Download and merge protein sequences.
   download_protein: true
+  # Download and merge metadata.
   download_metadata: true
+  # Pause for a manual validation step in the browser (e.g. CAPTCHA).
   require_manual_validation: false
+  # Check "Replace spaces with underscores in FASTA header" in the download dialog.
   replace_spaces_with_underscores: true
+  # Check "Remove spaces before and after values in FASTA header" in the download dialog.
   trim_fasta_values: true

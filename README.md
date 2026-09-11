@@ -1,30 +1,30 @@
 # GISAID Flu Download
 
-基于 Selenium 和 Microsoft Edge 自动操作 GISAID EpiFlu，按病毒类型、宿主、亚型或谱系及采样日期筛选记录，分批下载 Metadata、DNA 和 Protein，并合并多个日期批次。使用本项目时必须遵守 GISAID 的访问和数据使用条款。
+Automate GISAID EpiFlu with Selenium and Microsoft Edge: filter records by virus type, host, subtype or lineage, and sampling date, download Metadata, DNA, and Protein in batches, and merge the date batches. Using this project requires complying with GISAID's access and data use terms.
 
-## 项目结构
+## Project structure
 
 ```text
 .
 ├── configs/
-│   ├── example.yaml          # 可提交的脱敏配置模板
-│   └── local/                # 本地配置，Git 忽略
+│   ├── example.yaml          # Sanitized config template safe to commit
+│   └── local/                # Local configs, ignored by Git
 ├── skills/
-│   └── gisaid-sequence-download/ # 项目级序列下载技能
+│   └── gisaid-sequence-download/ # Project-level sequence download skill
 ├── src/gisaid_flu_download/
-│   ├── downloader.py         # EpiFlu 下载流程
-│   ├── merger.py             # Metadata/FASTA 合并工具
-│   └── pipeline.py           # 下载后自动合并的流水线
-├── tests/                    # 自动化回归测试
-├── pyproject.toml            # 依赖、打包和命令入口
-└── AGENTS.md                 # 贡献指南
+│   ├── downloader.py         # EpiFlu download workflow
+│   ├── merger.py             # Metadata/FASTA merge tooling
+│   └── pipeline.py           # Download-then-merge pipeline
+├── tests/                    # Automated regression tests
+├── pyproject.toml            # Dependencies, packaging, and entry points
+└── AGENTS.md                 # Contribution guidelines
 ```
 
-运行数据默认建议放在 `data/`，该目录不会进入 Git。
+Runtime data should default to `data/`, which never enters Git.
 
-## 安装
+## Installation
 
-需要 Conda、Microsoft Edge 和具有 EpiFlu 权限的 GISAID 账号。首次使用时创建环境并安装项目：
+You need Conda, Microsoft Edge, and a GISAID account with EpiFlu access. On first use, create the environment and install the project:
 
 ```bash
 conda create -n gisaid_flu_download python=3.10 pip -y
@@ -32,48 +32,58 @@ conda activate gisaid_flu_download
 python -m pip install -e '.[dev]'
 ```
 
-Selenium 通常会自动管理兼容的 EdgeDriver；浏览器本身需要提前安装。
+Selenium normally manages a compatible EdgeDriver automatically, so the Edge browser is the only thing you must install separately.
 
-## 配置
+### Microsoft Edge WebDriver
 
-复制脱敏模板并只修改本地副本：
+If Selenium Manager cannot download the driver for you (for example on an offline or restricted machine), install the matching Microsoft Edge WebDriver manually from the official page:
+
+https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/
+
+Download the driver whose version matches your installed Edge. Find your Edge version at `edge://version/`, then place the `msedgedriver` executable on your `PATH` (or pass it to Selenium via `EdgeService(executable_path=...)`). The browser itself can be installed from:
+
+https://www.microsoft.com/edge
+
+## Configuration
+
+Copy the sanitized template and edit only the local copy:
 
 ```bash
 cp configs/example.yaml configs/local/H1N1.yaml
 ```
 
-编辑该文件，填写账号并确认 `runtime.download_root`。真实账号配置只保存在 `configs/local/`，不要提交。
+Fill in your account and confirm `runtime.download_root`. Real credentials live only in `configs/local/` and must never be committed.
 
-配置中的关键部分：
+Key configuration sections:
 
-- `credentials`：GISAID 用户名和密码，禁止提交。
-- `runtime.download_root`：本次任务的输出目录；相对路径以启动命令所在目录为基准。
-- `filters`：病毒类型、H/N 亚型、B 型谱系、宿主、提交实验室和片段。
-- `dates.collection_date`：待下载的完整日期范围。
-- `dates.date_ranges`：非空时直接采用这些区间；为空时按 `max_strains_per_range` 自动拆分，成功后原子写回当前 YAML。
-- `options`：控制 Metadata、DNA、Protein 和人工验证。
-- `runtime.step_retries` 与 `runtime.retry_delay_sec`：控制 Selenium 步骤和自动日期拆分的重试次数与间隔。
+- `credentials`: GISAID username and password; never commit.
+- `runtime.download_root`: Output directory for this job; relative paths are resolved against the directory where the command is launched.
+- `filters`: Virus type, H/N subtypes, B lineage, host, submitting lab, location, TPE submissions, and segments.
+- `dates.collection_date`: The full date range to download.
+- `dates.date_ranges`: When non-empty, these ranges are used directly; when empty they are auto-split by `max_strains_per_range` and atomically written back to the current YAML on success.
+- `options`: Controls Metadata, DNA, Protein, manual validation, and the FASTA header options.
+- `runtime.step_retries` and `runtime.retry_delay_sec`: Retry count and delay for Selenium steps and automatic date splitting.
 
-首次运行或需要验证码时，建议设置 `headless: false` 和 `require_manual_validation: true`。
+For the first run, or when a CAPTCHA is expected, set `headless: false` and `require_manual_validation: true`.
 
-## 一条龙下载与合并
+## One-shot download and merge
 
-推荐使用 `gisaid-run`。每次调用只处理一个 YAML：它会读取配置、完成下载，并根据该 YAML 的 `options.download_*` 设置自动合并对应类型。
+Prefer `gisaid-run`. Each invocation handles exactly one YAML: it reads the config, completes the download, and automatically merges the corresponding types according to that YAML's `options.download_*` settings.
 
 ```bash
 gisaid-run configs/local/H1N1.yaml
 ```
 
-同一配置可以安全重跑。程序按日期区间检查启用类型的目标文件：非空文件视为已完成并跳过，缺失或空文件会重新下载。因此中断后直接再次执行同一命令即可续传；不要在任务运行期间并发使用同一输出目录。
+The same config can be rerun safely. The program checks the enabled-type target files per date range: a non-empty file counts as complete and is skipped, while missing or empty files are downloaded again. So after an interruption, just rerun the same command to resume; do not run concurrent processes against the same output directory.
 
-也可以通过 `python -m gisaid_flu_download <配置文件>` 运行同一流水线。需要运行其他亚型时，分别再次调用；需要单独重跑某一步时，使用：
+You can also run the same pipeline via `python -m gisaid_flu_download <config>`. To run other subtypes, invoke it again for each. To rerun a single stage separately, use:
 
 ```bash
 gisaid-download configs/local/H1N1.yaml
 gisaid-merge ./data H1N1 --types meta dna protein
 ```
 
-下载目录结构固定为：
+The download directory layout is fixed:
 
 ```text
 <download_root>/
@@ -83,18 +93,10 @@ gisaid-merge ./data H1N1 --types meta dna protein
 └── gisaid_run.log
 ```
 
-合并结果写入输入根目录，文件名为 `<name>_meta.xlsx`、`<name>_DNA_merged.fasta` 和 `<name>_protein_merged.fasta`。旧版本若已生成小写 `dna/`，请在合并前一次性重命名为 `DNA/`。
+Merged results are written into the input root as `<name>_meta.xlsx`, `<name>_DNA_merged.fasta`, and `<name>_protein_merged.fasta`. If an older version produced a lowercase `dna/`, rename it once to `DNA/` before merging.
 
-## 测试
+## Security and troubleshooting
 
-```bash
-python -m pytest -q
-python -m unittest discover -s tests -v  # 无 pytest 时的标准库入口
-python -m compileall -q src tests
-```
+Do not commit account credentials, downloaded data, browser temporary files, or logs. If credentials were ever committed or shared, rotate them immediately. If the browser fails to start, check the Edge and driver versions; if the CAPTCHA cannot be completed, disable headless mode; if the merger cannot find data, check the input root, file extensions, and the exact casing of `meta/`, `DNA/`, and `protein/`.
 
-当前测试覆盖 `DNA/` 目录约定、FASTA 的稳定排序与换行、配置加载，以及“先下载、后合并”和失败短路的流水线行为。
-
-## 安全与排错
-
-不要提交账号密码、下载数据、浏览器临时文件或日志。如果凭据曾被提交或共享，应立即轮换。浏览器无法启动时检查 Edge 与驱动版本；验证码无法完成时关闭无头模式；合并器找不到数据时检查输入根目录、文件扩展名及 `meta/`、`DNA/`、`protein/` 的精确大小写。
+If a download fails, simply retry it — the failure is often a transient network issue or a GISAID rate/access limit, and rerunning the same config resumes from the files already downloaded. If it keeps failing after several retries, please submit an issue describing the config shape (without credentials), the error output, and the step that failed.

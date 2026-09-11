@@ -29,27 +29,28 @@ def load_job(config_path: Path) -> PipelineJob:
         import yaml
     except ImportError as exc:
         raise RuntimeError(
-            "读取 YAML 配置需要 PyYAML，请先安装项目依赖。"
+            "Reading YAML config requires PyYAML; install the project "
+            "dependencies first."
         ) from exc
 
     resolved_config = config_path.expanduser().resolve()
     if not resolved_config.is_file():
-        raise FileNotFoundError(f"找不到配置文件: {resolved_config}")
+        raise FileNotFoundError(f"Config file not found: {resolved_config}")
 
     with resolved_config.open("r", encoding="utf-8") as config_file:
         raw = yaml.safe_load(config_file) or {}
 
     if not isinstance(raw, dict):
-        raise ValueError(f"配置顶层必须是映射: {resolved_config}")
+        raise ValueError(f"Config top level must be a mapping: {resolved_config}")
 
     runtime = raw.get("runtime") or {}
     options = raw.get("options") or {}
     if not isinstance(runtime, dict) or not isinstance(options, dict):
-        raise ValueError(f"runtime 和 options 必须是映射: {resolved_config}")
+        raise ValueError(f"runtime and options must be mappings: {resolved_config}")
 
     download_root_value = runtime.get("download_root")
     if not download_root_value:
-        raise ValueError(f"配置缺少 runtime.download_root: {resolved_config}")
+        raise ValueError(f"Config is missing runtime.download_root: {resolved_config}")
 
     return PipelineJob(
         config_path=resolved_config,
@@ -67,7 +68,7 @@ def run_pipeline(
 ) -> None:
     """Download and then merge one configuration."""
     job = load_job(config_file)
-    print(f"\n===== 开始处理配置: {job.config_path} =====")
+    print(f"\n===== Processing config: {job.config_path} =====")
     run_command(
         [
             sys.executable,
@@ -85,7 +86,7 @@ def run_pipeline(
         merge_dna=job.merge_dna,
         merge_protein=job.merge_protein,
     )
-    print(f"===== 配置处理完成: {job.config_path} =====")
+    print(f"===== Config processing complete: {job.config_path} =====")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -95,7 +96,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "config",
         type=Path,
-        help="本次运行的一个 YAML 配置文件",
+        help="One YAML config file for this run",
     )
     return parser
 
@@ -105,7 +106,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     try:
         run_pipeline(args.config)
     except (FileNotFoundError, RuntimeError, ValueError, subprocess.CalledProcessError) as exc:
-        print(f"流水线失败: {exc}", file=sys.stderr)
+        print(f"Pipeline failed: {exc}", file=sys.stderr)
         return 1
     return 0
 

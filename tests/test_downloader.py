@@ -187,7 +187,7 @@ class DownloaderRecoveryTests(unittest.TestCase):
         downloader = object.__new__(GisaidEpiFluDownloader)
         downloader._count_viruses_cached = Mock(return_value=20_001)
 
-        with self.assertRaisesRegex(GisaidDownloadError, "无法继续拆分"):
+        with self.assertRaisesRegex(GisaidDownloadError, "cannot split further"):
             downloader._split_ranges_by_max_strains(
                 "2024-01-01", "2024-01-01", 20_000
             )
@@ -221,7 +221,7 @@ class DownloaderRecoveryTests(unittest.TestCase):
             ),
         )
 
-        with self.assertRaisesRegex(ValueError, "不能重叠"):
+        with self.assertRaisesRegex(ValueError, "must not overlap"):
             config.validate()
 
 
