@@ -100,3 +100,5 @@ Merged results are written into the input root as `<name>_meta.xlsx`, `<name>_DN
 Do not commit account credentials, downloaded data, browser temporary files, or logs. If credentials were ever committed or shared, rotate them immediately. If the browser fails to start, check the Edge and driver versions; if the CAPTCHA cannot be completed, disable headless mode; if the merger cannot find data, check the input root, file extensions, and the exact casing of `meta/`, `DNA/`, and `protein/`.
 
 If a download fails, simply retry it — the failure is often a transient network issue or a GISAID rate/access limit, and rerunning the same config resumes from the files already downloaded. If it keeps failing after several retries, please submit an issue describing the config shape (without credentials), the error output, and the step that failed.
+
+If automatic date-range splitting fails repeatedly, the range likely contains too many sequences and GISAID is rate-limiting the repeated refreshes. Shorten `dates.collection_date` (or manually split the ranges in `dates.date_ranges`) into smaller intervals and retry.
