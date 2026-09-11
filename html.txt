@@ -1,0 +1,332 @@
+<body marginheight="0" marginwidth="0" topmargin="0" leftmargin="0" style="text-align:left;" onbeforeunload="sys.handleUnloadPage()" class="yui-skin-sam"><div id="yui-dt0-colresizerproxy" class="yui-dt-resizerproxy"></div>
+<form class="sys-form">
+<input style="display:none" name="dummy" type="entry"><button id="sys_focus_button" type="button" style="display: none;"></button>
+<div id="sys_devmenu">
+<img title="Clear caches and reload page" onclick="sys.devmenu_reloadApplication(false, null, true)" style="cursor:pointer" align="absmiddle" src="/epi3/entities/files/icons//sys_recache.gif"><img title="Reload page" onclick="sys.devmenu_reloadApplication(false)" style="cursor:pointer" align="absmiddle" src="/epi3/entities/files/icons//sys_reload.gif"><img title="Reload page and reset work setup" onclick="sys.devmenu_reloadApplication(true)" style="cursor:pointer" align="absmiddle" src="/epi3/entities/files/icons//sys_reset.png"><span id="sys_devmenu_info"></span><img title="Run tests" onclick="sys.devmenu_startTestRunner()" style="cursor:pointer;margin-left:5px" align="absmiddle" src="/epi3/entities/files/icons//testrunner_24.png"></div>
+<div style="display:none" id="testrunner_indicator">
+<img style="position:absolute;top:30px;left:30px" src="/epi3/entities/files/icons//testrunner_large.png"></div>
+<div id="sys_curtain" class="sys_curtain" onclick="sys.handleCurtainClick()" style="opacity: 0; display: none;"></div>
+<div id="sys_timer" class="sys_timer" style="display: none;">
+<div class="sys_timer_inner">
+<img class="sys_timer_img" src="/epi3/entities/files/icons//sys_timer.gif"><div id="sys_timer_message" class="sys_timer_message" style="display: none;"></div>
+<div style="margin-top: 20px; display: none;" id="sys_timer_gauge" class="sys_timer_gauge"></div>
+</div>
+</div>
+<div style="width: 980px; min-width: auto; margin-left: auto; margin-right: auto" class="page">
+        
+<div id="c_tl5nmx_6p" class="packer">
+            
+<div style="width: 100%; height: 126px;" id="c_tl5nmx_6q" class="top container-slot">
+                
+<div cid="c_tl5nmx_6r" class="sys-component-slot" id="c_tl5nmx_6r-c_tl5nmx_6r">
+<div class="frame_pane">
+	
+<div id="header_pane">
+		
+<div id="global_pane">
+			
+<img id="the_banner" src="/epi3/app_entities/entities/header.jpg">
+									<div id="users_pane">
+	You are logged in as <b>Zhang Chi</b> - <a href="#" onclick="sys.getC('c_tl5nmx_6r').call('doLogout', {})" shape="rect">logout</a>
+
+</div>			
+<div id="main_nav_pane">
+<div id="main_nav">
+<ul>
+<li>
+<a href="#" onclick="sys.call('c_tl5nmx_6r','Go',new Object({'page':'consortium'}));" shape="rect">Registered Users</a>
+</li>
+<li class="selected">
+<a href="#" onclick="sys.call('c_tl5nmx_6r','Go',new Object({'page':'epi3'}));" shape="rect" style="color:black;font-weight:bold">EpiFlu™</a>
+</li>
+<li>
+<a href="#" onclick="sys.call('c_tl5nmx_6r','GoCloud',new Object({'cms_page':'corona2020','_sid':'3EC9BA1W62N9YRU2ZLXBI1Q7QG7FHR6O','back':'eyJzaWQiOiAiM0VDOUJBMVc2Mk45WVJVMlpMWEJJMVE3UUc3RkhSNk8iLCAibW9kZSI6ICJwYWdlIiwgIl91cmwiOiAiaHR0cHM6Ly9hcHAyLmVwaWNvdi5vcmcvZXBpMy9mcm9udGVuZCJ9','mode':'page','_url':'https://app1.epicov.org/epi3/cfrontend'}));" shape="rect">hCoV-19</a>
+</li>
+<li>
+<a href="#" onclick="sys.call('c_tl5nmx_6r','GoCloud',new Object({'cms_page':'rsv','_sid':'3EC9BA1W62N9YRU2ZLXBI1Q7QG7FHR6O','back':'eyJzaWQiOiAiM0VDOUJBMVc2Mk45WVJVMlpMWEJJMVE3UUc3RkhSNk8iLCAibW9kZSI6ICJwYWdlIiwgIl91cmwiOiAiaHR0cHM6Ly9hcHAyLmVwaWNvdi5vcmcvZXBpMy9mcm9udGVuZCJ9','mode':'page','_url':'https://app1.epicov.org/epi3/cfrontend'}));" shape="rect">EpiRSV™</a>
+</li>
+<li>
+<a href="#" onclick="sys.call('c_tl5nmx_6r','GoCloud',new Object({'cms_page':'mpox','_sid':'3EC9BA1W62N9YRU2ZLXBI1Q7QG7FHR6O','back':'eyJzaWQiOiAiM0VDOUJBMVc2Mk45WVJVMlpMWEJJMVE3UUc3RkhSNk8iLCAibW9kZSI6ICJwYWdlIiwgIl91cmwiOiAiaHR0cHM6Ly9hcHAyLmVwaWNvdi5vcmcvZXBpMy9mcm9udGVuZCJ9','mode':'page','_url':'https://app1.epicov.org/epi3/cfrontend'}));" shape="rect">EpiPox™</a>
+</li>
+<li onclick="setTimeout('document.getElementById(\'subid_5\').style.display=\'block\'', 100)" onmouseleave="setTimeout('document.getElementById(\'subid_5\').style.display=\'none\'', 100)">
+    
+<a href="#" onclick="return false" shape="rect">EpiArbo™</a>
+    
+<div style="position: absolute;">
+        
+<div class="topnav_submenu" id="subid_5">
+            
+<div>
+<a class="topnav_submenu_entry" href="#" onmousedown="sys.call('c_tl5nmx_6r','GoCloud',new Object({'cms_page':'arbo_chikungunya','_sid':'3EC9BA1W62N9YRU2ZLXBI1Q7QG7FHR6O','back':'eyJzaWQiOiAiM0VDOUJBMVc2Mk45WVJVMlpMWEJJMVE3UUc3RkhSNk8iLCAibW9kZSI6ICJwYWdlIiwgIl91cmwiOiAiaHR0cHM6Ly9hcHAyLmVwaWNvdi5vcmcvZXBpMy9mcm9udGVuZCJ9','mode':'page','_url':'https://app1.epicov.org/epi3/cfrontend'}));" shape="rect">Chikungunya</a>
+</div>
+<div>
+<a class="topnav_submenu_entry" href="#" onmousedown="sys.call('c_tl5nmx_6r','GoCloud',new Object({'cms_page':'arbo_dengue','_sid':'3EC9BA1W62N9YRU2ZLXBI1Q7QG7FHR6O','back':'eyJzaWQiOiAiM0VDOUJBMVc2Mk45WVJVMlpMWEJJMVE3UUc3RkhSNk8iLCAibW9kZSI6ICJwYWdlIiwgIl91cmwiOiAiaHR0cHM6Ly9hcHAyLmVwaWNvdi5vcmcvZXBpMy9mcm9udGVuZCJ9','mode':'page','_url':'https://app1.epicov.org/epi3/cfrontend'}));" shape="rect">Dengue</a>
+</div>
+<div>
+<a class="topnav_submenu_entry" href="#" onmousedown="sys.call('c_tl5nmx_6r','GoCloud',new Object({'cms_page':'arbo_oropouche','_sid':'3EC9BA1W62N9YRU2ZLXBI1Q7QG7FHR6O','back':'eyJzaWQiOiAiM0VDOUJBMVc2Mk45WVJVMlpMWEJJMVE3UUc3RkhSNk8iLCAibW9kZSI6ICJwYWdlIiwgIl91cmwiOiAiaHR0cHM6Ly9hcHAyLmVwaWNvdi5vcmcvZXBpMy9mcm9udGVuZCJ9','mode':'page','_url':'https://app1.epicov.org/epi3/cfrontend'}));" shape="rect">Oropouche</a>
+</div>
+<div>
+<a class="topnav_submenu_entry_disabled" href="#" shape="rect">West Nile</a>
+</div>
+<div>
+<a class="topnav_submenu_entry_disabled" href="#" shape="rect">Yellow Fever</a>
+</div>
+<div>
+<a class="topnav_submenu_entry" href="#" onmousedown="sys.call('c_tl5nmx_6r','GoCloud',new Object({'cms_page':'arbo_zika','_sid':'3EC9BA1W62N9YRU2ZLXBI1Q7QG7FHR6O','back':'eyJzaWQiOiAiM0VDOUJBMVc2Mk45WVJVMlpMWEJJMVE3UUc3RkhSNk8iLCAibW9kZSI6ICJwYWdlIiwgIl91cmwiOiAiaHR0cHM6Ly9hcHAyLmVwaWNvdi5vcmcvZXBpMy9mcm9udGVuZCJ9','mode':'page','_url':'https://app1.epicov.org/epi3/cfrontend'}));" shape="rect">Zika</a>
+</div>        
+</div>
+    
+</div>
+
+</li>
+<li>
+<a href="#" onclick="sys.call('c_tl5nmx_6r','GoCloud',new Object({'cms_page':'niv','_sid':'3EC9BA1W62N9YRU2ZLXBI1Q7QG7FHR6O','back':'eyJzaWQiOiAiM0VDOUJBMVc2Mk45WVJVMlpMWEJJMVE3UUc3RkhSNk8iLCAibW9kZSI6ICJwYWdlIiwgIl91cmwiOiAiaHR0cHM6Ly9hcHAyLmVwaWNvdi5vcmcvZXBpMy9mcm9udGVuZCJ9','mode':'page','_url':'https://app1.epicov.org/epi3/cfrontend'}));" shape="rect">EpiNiV™</a>
+</li>
+<li>
+<a href="#" onclick="sys.call('c_tl5nmx_6r','Go',new Object({'page':'myprofile'}));" shape="rect">My Profile</a>
+</li>
+</ul>
+</div>
+</div>
+			
+<div id="global_pages_pane">
+			   © 2008 - 2026 |
+			   <a href="#" onclick="sys.getC('c_tl5nmx_6r').call('Go', {'page':'terms'})" shape="rect">Terms of Use</a> |
+			   <a href="#" onclick="sys.getC('c_tl5nmx_6r').call('Go', {'page':'gdpr'})" shape="rect">Privacy Notice</a> |
+			   <a href="#" onclick="sys.getC('c_tl5nmx_6r').call('Help', {})" shape="rect">Help</a>
+			
+</div>
+		
+</div>
+
+	
+</div>
+
+</div>
+</div>
+            
+</div>
+            
+<div style="top: 126px; right: 0px; bottom: 0px; left: 0px;" scrollpositions="," id="c_tl5nmx_6s" class="main container-slot">
+            
+<div id="c_tl5nmx_m3" class="packer">
+                
+<div style="width: 100%; height: 35px;" id="c_tl5nmx_m4" class="top container-slot">
+                    
+<div cid="c_tl5nmx_m5" class="sys-component-slot" id="c_tl5nmx_m5-c_tl5nmx_m5" style="user-select: none;">
+<div class="sys-actionbar-bar">
+	
+<div class="sys-actionbar-action-ni" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6d', 'Home', '', false)" style="float: left;">
+    EpiFlu™</div>
+<div class="sys-actionbar-nisep"></div>
+<div class="sys-actionbar-action-ni" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6e', 'Browse', '', false)" style="float: left;">
+    Search</div>
+<div class="sys-actionbar-nisep"></div>
+<div class="sys-actionbar-action-ni sys-actionbar-disabled" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6f', 'Results', '', true)" style="float: left;">
+    Back to results</div>
+<div class="sys-actionbar-nisep"></div>
+<div class="sys-actionbar-action-ni" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6g', 'Worksets', '', false)" style="float: left;">
+    Worksets</div>
+<div class="sys-actionbar-nisep"></div>
+<div class="sys-actionbar-action-ni" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6h', 'Upload', '', false)" style="float: left;">
+    Upload</div>
+<div class="sys-actionbar-nisep"></div>
+<div class="sys-actionbar-action-ni" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6i', '', 'page_buf.DownloadPage', false)" style="float: left;">
+    Batch Upload</div>
+<div class="sys-actionbar-nisep"></div>
+<div class="sys-actionbar-action-ni" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6j', 'CLIDownload', '', false)" style="float: left;">
+    CLI Upload</div>
+<div class="sys-actionbar-nisep"></div>
+<div class="sys-actionbar-action-ni" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6k', '', 'page_settings.SettingsPage', false)" style="float: left;">
+    Settings</div>
+<div class="sys-actionbar-nisep"></div>
+<div class="sys-actionbar-menu" id="mc_tl5nmx_m5-9" style="float: left;">
+	Analysis	<div class="sys-actionbar-menuentries" id="emc_tl5nmx_m5-9" style="display: none;">
+		
+<div class="sys-actionbar-action" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6m', '', 'page_blast.BlastPage', false)" style="display:block">
+	Blast</div>
+<div class="sys-actionbar-action" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6n', '', 'page_align.AlignmentPage', false)" style="display:block">
+	Align</div>
+<div class="sys-actionbar-action" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_2pxs', 'callToolA', '', false)" style="display:block">
+	PrimerChecker</div>
+<div class="sys-actionbar-action" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_2pxt', 'callToolB', '', false)" style="display:block">
+	AudacityInstant</div>
+<div class="sys-actionbar-mruler" style="display:block"></div>
+<div class="sys-actionbar-action" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_2pxv', 'callTP', '', false)" style="display:block">
+	FluSurver</div>
+<div class="sys-actionbar-mruler" style="display:block"></div>
+<div class="sys-actionbar-action" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_2pxx', '', 'page_thirdparty.ThirdPartyServersTasksPage', false)" style="display:block">
+	Analysis result list</div>	
+</div>
+
+</div>
+<div class="sys-actionbar-nisep"></div>
+<div class="sys-actionbar-action-ni" onclick="sys.getC('c_tl5nmx_m5').onclick('ce_tl5nmx_6o', 'ContactCuration', '', false)" style="float: left;">
+    Help</div>    
+<div class="sys-actionbar-text" style="float:right;margin-right:27px">
+    
+</div>
+</div>
+</div>
+                
+</div>
+                
+<div style="top: 35px; right: 0px; bottom: 100px; left: 0px;" scrollpositions="," id="c_tl5nmx_m6" class="main container-slot">
+                  
+<div cid="c_tl5nmx_m7" class="sys-component-slot" id="c_tl5nmx_m7-c_tl5nmx_m7">
+<style type="text/css">#c_tl5nmx_m7_table td {
+	font-size: 75% !important;
+}
+#c_tl5nmx_m7_table th {
+	font-size: 75% !important;
+}
+#c_tl5nmx_m7_table .yui-dt-liner {
+	padding: 2px 10px 2px 10px !important;
+}#c_tl5nmx_m7_table td {
+	white-space:nowrap;
+}</style>
+<h2 class="sys-dtable-caption" id="c_tl5nmx_m7_caption">Released files</h2>
+<div class="sys-datatable yui-dt yui-dt-scrollable" id="c_tl5nmx_m7_table"><div class="yui-dt-mask" style="display: none;"></div><div class="yui-dt-hd" style="background-color: rgb(242, 242, 242); width: 960px;"><table id="yuievtautoid-1"><colgroup><col><col><col><col><col><col><col><col><col><col><col><col><col><col><col><col></colgroup><thead style=""><tr class="yui-dt-first yui-dt-last"><th id="yui-dt0-fixedth-c" rowspan="1" colspan="1" class="yui-dt0-col-c yui-dt-col-c"><div id="yui-dt0-th-c-liner" class="yui-dt-liner"><span class="yui-dt-label" id="yui-gen21"><input type="checkbox" onclick="sys.getC(&quot;c_tl5nmx_m7&quot;).toggleAll(this)" id="yui-gen25"></span></div></th><th id="yui-dt0-fixedth-d" rowspan="1" colspan="1" class="yui-dt0-col-d yui-dt-col-d"><div id="yui-dt0-th-d-liner" class="yui-dt-liner"><span class="yui-dt-label">edit</span></div></th><th id="yui-dt0-fixedth-e" rowspan="1" colspan="1" class="yui-dt0-col-e yui-dt-col-e yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-e-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-e" title="Click to sort ascending" class="yui-dt-sortable">Virus Name</a></span></div><div id="yui-dt0-fixedth-e-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-f" rowspan="1" colspan="1" class="yui-dt0-col-f yui-dt-col-f yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-f-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-f" title="Click to sort ascending" class="yui-dt-sortable">Accession ID</a></span></div><div id="yui-dt0-fixedth-f-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-g" rowspan="1" colspan="1" class="yui-dt0-col-g yui-dt-col-g yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-g-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-g" title="Click to sort ascending" class="yui-dt-sortable">Subtype</a></span></div><div id="yui-dt0-fixedth-g-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-h" rowspan="1" colspan="1" class="yui-dt0-col-h yui-dt-col-h yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-h-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-h" title="Click to sort ascending" class="yui-dt-sortable">Passage</a></span></div><div id="yui-dt0-fixedth-h-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-i" rowspan="1" colspan="1" class="yui-dt0-col-i yui-dt-col-i yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-i-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-i" title="Click to sort ascending" class="yui-dt-sortable">PB2</a></span></div><div id="yui-dt0-fixedth-i-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-j" rowspan="1" colspan="1" class="yui-dt0-col-j yui-dt-col-j yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-j-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-j" title="Click to sort ascending" class="yui-dt-sortable">PB1</a></span></div><div id="yui-dt0-fixedth-j-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-k" rowspan="1" colspan="1" class="yui-dt0-col-k yui-dt-col-k yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-k-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-k" title="Click to sort ascending" class="yui-dt-sortable">PA</a></span></div><div id="yui-dt0-fixedth-k-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-l" rowspan="1" colspan="1" class="yui-dt0-col-l yui-dt-col-l yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-l-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-l" title="Click to sort ascending" class="yui-dt-sortable">HA</a></span></div><div id="yui-dt0-fixedth-l-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-m" rowspan="1" colspan="1" class="yui-dt0-col-m yui-dt-col-m yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-m-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-m" title="Click to sort ascending" class="yui-dt-sortable">NP</a></span></div><div id="yui-dt0-fixedth-m-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-n" rowspan="1" colspan="1" class="yui-dt0-col-n yui-dt-col-n yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-n-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-n" title="Click to sort ascending" class="yui-dt-sortable">NA</a></span></div><div id="yui-dt0-fixedth-n-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-o" rowspan="1" colspan="1" class="yui-dt0-col-o yui-dt-col-o yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-o-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-o" title="Click to sort ascending" class="yui-dt-sortable">MP</a></span></div><div id="yui-dt0-fixedth-o-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-p" rowspan="1" colspan="1" class="yui-dt0-col-p yui-dt-col-p yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-p-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-p" title="Click to sort ascending" class="yui-dt-sortable">NS</a></span></div><div id="yui-dt0-fixedth-p-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-q" rowspan="1" colspan="1" class="yui-dt0-col-q yui-dt-col-q yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-q-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-q" title="Click to sort ascending" class="yui-dt-sortable">HE</a></span></div><div id="yui-dt0-fixedth-q-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th><th id="yui-dt0-fixedth-r" rowspan="1" colspan="1" class="yui-dt0-col-r yui-dt-col-r yui-dt-sortable yui-dt-resizeable" style="border-right: 1px solid rgb(242, 242, 242);"><div class="yui-dt-resizerliner"><div id="yui-dt0-th-r-liner" class="yui-dt-liner"><span class="yui-dt-label"><a href="yui-dt0-href-r" title="Click to sort ascending" class="yui-dt-sortable">P3</a></span></div><div id="yui-dt0-fixedth-r-resizer" class="yui-dt-resizer" style="inset: auto 0px 0px auto; height: 23px;"></div></div></th></tr></thead></table></div><div class="yui-dt-bd" style="height: 277px; width: 960px;"><table summary="" style="margin-top: 0px;" id="yuievtautoid-0"><thead><tr><th id="yui-dt0-th-c" rowspan="1" colspan="1" class="yui-dt-first"><input type="checkbox" onclick="sys.getC(&quot;c_tl5nmx_m7&quot;).toggleAll(this)"></th><th id="yui-dt0-th-d" rowspan="1" colspan="1">edit</th><th id="yui-dt0-th-e" rowspan="1" colspan="1">Virus Name</th><th id="yui-dt0-th-f" rowspan="1" colspan="1">Accession ID</th><th id="yui-dt0-th-g" rowspan="1" colspan="1">Subtype</th><th id="yui-dt0-th-h" rowspan="1" colspan="1">Passage</th><th id="yui-dt0-th-i" rowspan="1" colspan="1">PB2</th><th id="yui-dt0-th-j" rowspan="1" colspan="1">PB1</th><th id="yui-dt0-th-k" rowspan="1" colspan="1">PA</th><th id="yui-dt0-th-l" rowspan="1" colspan="1">HA</th><th id="yui-dt0-th-m" rowspan="1" colspan="1">NP</th><th id="yui-dt0-th-n" rowspan="1" colspan="1">NA</th><th id="yui-dt0-th-o" rowspan="1" colspan="1">MP</th><th id="yui-dt0-th-p" rowspan="1" colspan="1">NS</th><th id="yui-dt0-th-q" rowspan="1" colspan="1">HE</th><th id="yui-dt0-th-r" rowspan="1" colspan="1" class="yui-dt-last">P3</th></tr></thead><tbody class="yui-dt-message" style="display: none;"><tr class="yui-dt-first yui-dt-last"><td colspan="16" class="yui-dt-first yui-dt-last" id="yui-gen20"><div class="yui-dt-liner yui-dt-loading" id="yui-gen19"> Please wait...</div></td></tr></tbody><tbody tabindex="0" class="yui-dt-data" style=""><tr class="yui-dt-rec yui-dt-first yui-dt-even" id="yui-rec22" style=""><td headers="yui-dt0-th-c " class="yui-dt0-col-c yui-dt-col-c yui-dt-first"><div class="yui-dt-liner"><input type="checkbox" class="yui-dt-checkbox"></div></td><td headers="yui-dt0-th-d " class="yui-dt0-col-d yui-dt-col-d"><div class="yui-dt-liner"><img border="0" align="absmiddle" src="/epi3/app_entities/entities/help/pencil_noedit.png"></div></td><td headers="yui-dt0-th-e " class="yui-dt0-col-e yui-dt-col-e yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><span style="cursor:pointer">A/Catalonia/NSVH161525198/2026</span></div></td><td headers="yui-dt0-th-f " class="yui-dt0-col-f yui-dt-col-f yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">EPI_ISL_20527789</div></td><td headers="yui-dt0-th-g " class="yui-dt0-col-g yui-dt-col-g yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">H3N2</div></td><td headers="yui-dt0-th-h " class="yui-dt0-col-h yui-dt-col-h yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">Original</div></td><td headers="yui-dt0-th-i " class="yui-dt0-col-i yui-dt-col-i yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">2,316</strong></div></td><td headers="yui-dt0-th-j " class="yui-dt0-col-j yui-dt-col-j yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><span style="font-weight:bold;color:#CC8833" title="Segment PB1 (isolate 20527789) is not complete.">2,316</span></div></td><td headers="yui-dt0-th-k " class="yui-dt0-col-k yui-dt-col-k yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><span style="font-weight:bold;color:#CC8833" title="Segment PA (isolate 20527789) is not complete.">2,209</span></div></td><td headers="yui-dt0-th-l " class="yui-dt0-col-l yui-dt-col-l yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,737</strong></div></td><td headers="yui-dt0-th-m " class="yui-dt0-col-m yui-dt-col-m yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,541</strong></div></td><td headers="yui-dt0-th-n " class="yui-dt0-col-n yui-dt-col-n yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,441</strong></div></td><td headers="yui-dt0-th-o " class="yui-dt0-col-o yui-dt-col-o yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,002</strong></div></td><td headers="yui-dt0-th-p " class="yui-dt0-col-p yui-dt-col-p yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">865</strong></div></td><td headers="yui-dt0-th-q " class="yui-dt0-col-q yui-dt-col-q yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">---</div></td><td headers="yui-dt0-th-r " class="yui-dt0-col-r yui-dt-col-r yui-dt-sortable yui-dt-resizeable yui-dt-last"><div class="yui-dt-liner">---</div></td></tr><tr class="yui-dt-rec yui-dt-odd" id="yui-rec23" style=""><td headers="yui-dt0-th-c " class="yui-dt0-col-c yui-dt-col-c yui-dt-first"><div class="yui-dt-liner"><input type="checkbox" class="yui-dt-checkbox"></div></td><td headers="yui-dt0-th-d " class="yui-dt0-col-d yui-dt-col-d"><div class="yui-dt-liner"><img border="0" align="absmiddle" src="/epi3/app_entities/entities/help/pencil_noedit.png"></div></td><td headers="yui-dt0-th-e " class="yui-dt0-col-e yui-dt-col-e yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><span style="cursor:pointer">A/Catalonia/NSVH198361027/2026</span></div></td><td headers="yui-dt0-th-f " class="yui-dt0-col-f yui-dt-col-f yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">EPI_ISL_20527787</div></td><td headers="yui-dt0-th-g " class="yui-dt0-col-g yui-dt-col-g yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">H3N2</div></td><td headers="yui-dt0-th-h " class="yui-dt0-col-h yui-dt-col-h yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">Original</div></td><td headers="yui-dt0-th-i " class="yui-dt0-col-i yui-dt-col-i yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">2,316</strong></div></td><td headers="yui-dt0-th-j " class="yui-dt0-col-j yui-dt-col-j yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><span style="font-weight:bold;color:#CC8833" title="Segment PB1 (isolate 20527787) is not complete.">2,316</span></div></td><td headers="yui-dt0-th-k " class="yui-dt0-col-k yui-dt-col-k yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><span style="font-weight:bold;color:#CC8833" title="Segment PA (isolate 20527787) is not complete.">2,209</span></div></td><td headers="yui-dt0-th-l " class="yui-dt0-col-l yui-dt-col-l yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,737</strong></div></td><td headers="yui-dt0-th-m " class="yui-dt0-col-m yui-dt-col-m yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,542</strong></div></td><td headers="yui-dt0-th-n " class="yui-dt0-col-n yui-dt-col-n yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,441</strong></div></td><td headers="yui-dt0-th-o " class="yui-dt0-col-o yui-dt-col-o yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,002</strong></div></td><td headers="yui-dt0-th-p " class="yui-dt0-col-p yui-dt-col-p yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">865</strong></div></td><td headers="yui-dt0-th-q " class="yui-dt0-col-q yui-dt-col-q yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">---</div></td><td headers="yui-dt0-th-r " class="yui-dt0-col-r yui-dt-col-r yui-dt-sortable yui-dt-resizeable yui-dt-last"><div class="yui-dt-liner">---</div></td></tr><tr class="yui-dt-rec yui-dt-last yui-dt-even" id="yui-rec24" style=""><td headers="yui-dt0-th-c " class="yui-dt0-col-c yui-dt-col-c yui-dt-first"><div class="yui-dt-liner"><input type="checkbox" class="yui-dt-checkbox"></div></td><td headers="yui-dt0-th-d " class="yui-dt0-col-d yui-dt-col-d"><div class="yui-dt-liner"><img border="0" align="absmiddle" src="/epi3/app_entities/entities/help/pencil_noedit.png"></div></td><td headers="yui-dt0-th-e " class="yui-dt0-col-e yui-dt-col-e yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><span style="cursor:pointer">A/Catalonia/NSJT420419636/2026</span></div></td><td headers="yui-dt0-th-f " class="yui-dt0-col-f yui-dt-col-f yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">EPI_ISL_20527779</div></td><td headers="yui-dt0-th-g " class="yui-dt0-col-g yui-dt-col-g yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">H3N2</div></td><td headers="yui-dt0-th-h " class="yui-dt0-col-h yui-dt-col-h yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">Original</div></td><td headers="yui-dt0-th-i " class="yui-dt0-col-i yui-dt-col-i yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">2,316</strong></div></td><td headers="yui-dt0-th-j " class="yui-dt0-col-j yui-dt-col-j yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><span style="font-weight:bold;color:#CC8833" title="Segment PB1 (isolate 20527779) is not complete.">2,316</span></div></td><td headers="yui-dt0-th-k " class="yui-dt0-col-k yui-dt-col-k yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><span style="font-weight:bold;color:#CC8833" title="Segment PA (isolate 20527779) is not complete.">2,209</span></div></td><td headers="yui-dt0-th-l " class="yui-dt0-col-l yui-dt-col-l yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,737</strong></div></td><td headers="yui-dt0-th-m " class="yui-dt0-col-m yui-dt-col-m yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,541</strong></div></td><td headers="yui-dt0-th-n " class="yui-dt0-col-n yui-dt-col-n yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,441</strong></div></td><td headers="yui-dt0-th-o " class="yui-dt0-col-o yui-dt-col-o yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">1,002</strong></div></td><td headers="yui-dt0-th-p " class="yui-dt0-col-p yui-dt-col-p yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner"><strong title="Segment is complete">865</strong></div></td><td headers="yui-dt0-th-q " class="yui-dt0-col-q yui-dt-col-q yui-dt-sortable yui-dt-resizeable"><div class="yui-dt-liner">---</div></td><td headers="yui-dt0-th-r " class="yui-dt0-col-r yui-dt-col-r yui-dt-sortable yui-dt-resizeable yui-dt-last"><div class="yui-dt-liner">---</div></td></tr></tbody></table></div></div>
+<div class="sys-datatable-buttons-ctnr-div" id="c_tl5nmx_m7_btns">
+    
+<div class="sys-datatable-info-left">
+<span id="c_tl5nmx_m7_leftinfo"><span style="white-space:nowrap;">Total: 3 viruses (24 sequences)</span></span>
+</div>
+    
+<div class="sys-datatable-info-mid" style="">
+<div class="sys-datatable-info-midmid yui-pg-container" id="c_tl5nmx_m7_pagi" style=""><span id="yui-pg0-0-first-span27" class="yui-pg-first">&lt;&lt;</span> <span id="yui-pg0-0-prev-span29" class="yui-pg-previous">&lt;</span> <span id="yui-pg0-0-pages30" class="yui-pg-pages"><span class="yui-pg-current-page yui-pg-page">1</span></span> <span id="yui-pg0-0-next-span32" class="yui-pg-next">&gt;</span> <span id="yui-pg0-0-last-span34" class="yui-pg-last">&gt;&gt;</span></div>
+</div>
+    
+<div class="sys-datatable-info-right"></div>
+    
+
+</div>
+</div>
+                
+</div>
+                
+<div style="width: 100%; height: 100px;" id="c_tl5nmx_m8" class="buttons container-slot">
+                  
+<div cid="c_tl5nmx_m9" class="sys-component-slot" id="c_tl5nmx_m9-c_tl5nmx_m9">
+<div style="">
+<div id="ce_tl5nmx_37">
+<table class="sys-form-firow" style="width:98%;">
+<tbody><tr>
+<td class="sys-form-cfilabel" colspan="1" rowspan="1" style="width:150px">
+		
+<div class="sys-form-filabel sys-form-filabel"></div>
+	
+</td><td colspan="1" rowspan="1" style="float:right">
+		
+<table class="sys-form-filine">
+<tbody><tr>
+<td class="sys-form-filine-td" colspan="1" rowspan="1" style="">
+		
+<div class="sys-form-lsfilabel sys-form-filabel">Search in results<img align="absmiddle" class="sys-form-help-inl" id="ce_tl5nmx_38_hicn" src="/epi3/entities/files/icons/mini_help.png"></div>
+	
+</td><td class="sys-form-filine-td" colspan="1" rowspan="1" style="">
+		
+<div id="ce_tl5nmx_38">        
+<div class="sys-form-fi-entry" style=";width:400px">
+       
+<div style="float:right;padding-left:3px">
+                       
+</div>
+        	
+<input class="sys-event-hook sys-fi-mark" id="ce_tl5nmx_38_entry" maxlength="255" placeholder="" style=";" type="text" value="">
+                
+<div class="" id="ce_tl5nmx_38_acomplc"></div>            
+</div>
+    
+<div class="sys-form-fi-message-cnt">
+<div class="sys-form-fi-message" id="ce_tl5nmx_38_msg"></div>
+</div>
+    
+</div>	
+</td>
+</tr>
+</tbody></table>	
+</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</div>
+                
+<div cid="c_tl5nmx_m9" class="sys-component-slot" id="c_tl5nmx_m8-c_tl5nmx_m9">
+<div id="ce_tl5nmx_3a">
+<div id="ce_tl5nmx_3b">
+<div style="float: left">
+	
+<button class="sys-event-hook sys-form-button" style="" title="" type="button">Go back</button>
+
+</div>
+</div>
+<div id="ce_tl5nmx_3c">
+<div style="float: left">
+	
+<button class="sys-event-hook sys-form-button" style="" title="" type="button">Help</button>
+
+</div>
+</div>
+<div id="ce_tl5nmx_3j">
+<div style="float: right">
+	
+<button class="sys-event-hook sys-form-button" style="" title="" type="button">Download</button>
+
+</div>
+</div>
+<div id="ce_tl5nmx_3g">
+<div style="float: right">
+	
+<button class="sys-event-hook sys-form-button" style="" title="" type="button">Add to analysis</button>
+
+</div>
+</div>
+<div id="ce_tl5nmx_3f">
+<div style="float: right">
+	
+<button class="sys-event-hook sys-form-button" style="" title="" type="button">Select</button>
+
+</div>
+</div>
+<div id="ce_tl5nmx_3e">
+<div style="float: right">
+	
+<button class="sys-event-hook sys-form-button" style="" title="" type="button">Copy to...</button>
+
+</div>
+</div>
+<div id="ce_tl5nmx_3d">
+<div style="float: right">
+	
+<button class="sys-event-hook sys-form-button" style="" title="" type="button">EPI_SET</button>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+            
+</div>
+</div>
+        
+</div>
+    
+</div>
+</form>
+
+
+<div><div class="_th-container">
+    <div class="_th-click-hover _item-input">
+        x1.00
+    </div>
+    <div class="_th-item _item-x2">&gt;</div>
+    <div class="_th-item _item-x-2">&lt;</div>
+    <div class="_th-item _item-xx2">&gt;&gt;</div>
+    <div class="_th-item _item-xx-2">&lt;&lt;</div>
+    <div class="_th-item _item-reset">O</div>
+</div>
+<div class="_th_cover-all-show-times _th_hidden">
+    <div class="_th_times">x1.00</div>
+</div></div><div id="cboxOverlay" style="display: none;"></div><div id="colorbox" class="" style="display: none;"><div id="cboxWrapper"><div><div id="cboxTopLeft" style="float: left;"></div><div id="cboxTopCenter" style="float: left;"></div><div id="cboxTopRight" style="float: left;"></div></div><div style="clear: left;"><div id="cboxMiddleLeft" style="float: left;"></div><div id="cboxContent" style="float: left;"><div id="cboxLoadedContent" style="width: 0px; height: 0px; overflow: hidden; float: left;"></div><div id="cboxLoadingOverlay" style="float: left;"></div><div id="cboxLoadingGraphic" style="float: left;"></div><div id="cboxTitle" style="float: left;"></div><div id="cboxCurrent" style="float: left;"></div><div id="cboxNext" style="float: left;"></div><div id="cboxPrevious" style="float: left;"></div><div id="cboxSlideshow" style="float: left;"></div><div id="cboxClose" style="float: left;"></div></div><div id="cboxMiddleRight" style="float: left;"></div></div><div style="clear: left;"><div id="cboxBottomLeft" style="float: left;"></div><div id="cboxBottomCenter" style="float: left;"></div><div id="cboxBottomRight" style="float: left;"></div></div></div><div style="position: absolute; width: 9999px; visibility: hidden; display: none;"></div></div><div id="sysolcurtain-wid_tl5nmx_2pxy" class="sys_olcurtain" style="display: block;"></div><iframe id="sysoverlay-wid_tl5nmx_2pxy" name="downl" allowfullscreen="true" frameborder="0" border="0" hspace="0" vspace="0" marginwidth="0px" marginheight="0px" class="sys-overlay-style" src="about:blank" style="position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;"></iframe></body>

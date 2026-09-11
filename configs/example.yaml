@@ -1,7 +1,7 @@
 # Copy this file into configs/local/ and add your own account details.
 credentials:
-  username: "YOUR_GISAID_USERNAME"
-  password: "YOUR_GISAID_PASSWORD"
+  username: YOUR_GISAID_USERNAME
+  password: YOUR_GISAID_PASSWORD
 
 runtime:
   download_root: "./data/H1N1"
