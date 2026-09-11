@@ -26,6 +26,9 @@ venv/
 data/
 downloads/
 output/
+.claude/
+skills/
+tests/
 *.log
 *.crdownload
 *.part
@@ -33,3 +36,5 @@ output/
 *_meta.xlsx
 *_DNA_merged.fasta
 *_protein_merged.fasta
+
+AGENTS.md

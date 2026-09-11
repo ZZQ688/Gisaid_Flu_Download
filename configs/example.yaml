@@ -19,6 +19,8 @@ filters:
   b_lineages: []
   hosts: ["Human"]
   submit_labs: []
+  locations: []
+  tpe_submissions: false
   segments: ["all"]
 
 dates:
@@ -31,3 +33,5 @@ options:
   download_protein: true
   download_metadata: true
   require_manual_validation: false
+  replace_spaces_with_underscores: true
+  trim_fasta_values: true

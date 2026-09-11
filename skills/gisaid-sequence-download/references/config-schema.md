@@ -7,6 +7,8 @@ Read this reference before creating or changing a download YAML.
 - `credentials.username`, `credentials.password`: Keep real values only in an ignored local YAML. Never print, quote, commit, or pass them as command arguments.
 - `runtime.download_root`: Use one dedicated absolute or verified relative output directory per job.
 - `filters.virus_type`: Set `A` or `B`. For A, set `h_types` and `n_types`; for B, set `b_lineages`.
+- `filters.locations`: List of `Location` visible-text values to multi-select; leave empty to skip the filter.
+- `filters.tpe_submissions`: Boolean (`true`/`false`); check the "TPE submissions" filter. Default `false`.
 - `dates.collection_date`: Set `[start, end]` in `YYYY-MM-DD` format.
 - `dates.date_ranges`: Leave empty to calculate ranges automatically. A successful calculation atomically replaces this list in the same YAML.
 - `dates.max_strains_per_range`: Keep below the current GISAID batch limit; the project default is 20,000 and the example uses 18,000.
@@ -21,6 +23,8 @@ Read this reference before creating or changing a download YAML.
 - `runtime.retry_delay_sec`: Delay between retries; default `5`.
 - `runtime.headless`: Set `false` when login verification or CAPTCHA may appear. A non-headless run requires an interactive display.
 - `options.require_manual_validation`: Set `true` when a visible manual verification step is required during the download dialog. This option does not extend the login-field wait.
+- `options.replace_spaces_with_underscores`: Check "Replace spaces with underscores in FASTA header" in the download dialog. Default `true`.
+- `options.trim_fasta_values`: Check "Remove spaces before and after values in FASTA header" in the download dialog. Default `true`.
 
 ## Safe edits
 

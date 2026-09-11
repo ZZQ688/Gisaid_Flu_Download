@@ -63,6 +63,8 @@ class DownloadConfig:
     b_lineages: Sequence[str] = field(default_factory=list)
     hosts: Sequence[str] = field(default_factory=list)
     submit_labs: Sequence[str] = field(default_factory=list)
+    locations: Sequence[str] = field(default_factory=list)
+    tpe_submissions: bool = False
 
     # Date ranges
     collection_date: Optional[Tuple[str, str]] = None  # ("YYYY-MM-DD", "YYYY-MM-DD")
@@ -77,6 +79,8 @@ class DownloadConfig:
 
     # Sequence options
     segments: Sequence[str] = field(default_factory=lambda: ["HA"])
+    replace_spaces_with_underscores: bool = True
+    trim_fasta_values: bool = True
     dna_header: str = "Isolate ID | Virus name | Collection date | Type | Lineage | Segment"
     protein_header: str = "Isolate ID | Virus name | Collection date | Type | Lineage  | Gene name"
 
@@ -397,6 +401,10 @@ class GisaidEpiFluDownloader:
             host_select = self._filter_select_by_label("Host")
             self._select_by_visible_text(host_select, self.cfg.hosts)
 
+        if self.cfg.locations:
+            location_select = self._filter_select_by_label("Location")
+            self._select_by_visible_text(location_select, self.cfg.locations)
+
         type_select = self._filter_select_by_label("Type")
         type_select.deselect_all()
         type_select.select_by_value(self.cfg.virus_type)
@@ -422,6 +430,12 @@ class GisaidEpiFluDownloader:
             b_select.deselect_all()
             for v in self.cfg.b_lineages:
                 b_select.select_by_value(v)
+                self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
+
+        if self.cfg.tpe_submissions:
+            checkbox = self._filter_checkbox_by_label("TPE submissions")
+            if not checkbox.is_selected():
+                checkbox.click()
                 self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
 
         LOG.info("完成筛选条件设置。")
@@ -822,6 +836,22 @@ class GisaidEpiFluDownloader:
             )
         return self._enabled_select_in(control_tds[col_index])
 
+    def _filter_checkbox_by_label(self, label: str) -> WebElement:
+        """按标签文本定位对应的复选框（如 "TPE submissions"）。"""
+        label_div = self._wait_present(
+            By.XPATH, self._SEL_FILTER_LABEL.format(label=label), timeout=20
+        )
+        label_td = label_div.find_element(By.XPATH, "./parent::td")
+        label_tr = label_td.find_element(By.XPATH, "./parent::tr")
+
+        if label_tr.find_elements(By.XPATH, ".//input[@type='checkbox']"):
+            return label_tr.find_element(By.XPATH, ".//input[@type='checkbox']")
+
+        col_index = self._column_index(label_td)
+        control_tr = label_tr.find_element(By.XPATH, "./following-sibling::tr[1]")
+        control_td = control_tr.find_elements(By.TAG_NAME, "td")[col_index]
+        return control_td.find_element(By.XPATH, ".//input[@type='checkbox']")
+
     def _enabled_select_in(self, container: WebElement) -> Select:
         def _find_enabled_select(_):
             sel = container.find_element(By.TAG_NAME, "select")
@@ -884,8 +914,13 @@ class GisaidEpiFluDownloader:
                 self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
 
     def _enable_fasta_header_options(self) -> None:
-        for sel in (self._SEL_OPT_REPLACE_UNDERSCORE, self._SEL_OPT_TRIM_SPACES):
-            checkbox = self._wait_present(*sel, timeout=20)
+        if self.cfg.replace_spaces_with_underscores:
+            checkbox = self._wait_present(*self._SEL_OPT_REPLACE_UNDERSCORE, timeout=20)
+            if not checkbox.is_selected():
+                checkbox.click()
+                self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
+        if self.cfg.trim_fasta_values:
+            checkbox = self._wait_present(*self._SEL_OPT_TRIM_SPACES, timeout=20)
             if not checkbox.is_selected():
                 checkbox.click()
                 self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
@@ -1037,6 +1072,8 @@ def load_download_config(config_file: Path) -> DownloadConfig:
         b_lineages=filters.get("b_lineages", []),
         hosts=filters.get("hosts", ["Human"]),
         submit_labs=filters.get("submit_labs", []),
+        locations=filters.get("locations", []),
+        tpe_submissions=bool(filters.get("tpe_submissions", False)),
         segments=filters.get("segments", ["HA"]),
         collection_date=collection_date,
         date_ranges=date_ranges,
@@ -1047,6 +1084,10 @@ def load_download_config(config_file: Path) -> DownloadConfig:
         require_manual_validation=bool(
             options.get("require_manual_validation", False)
         ),
+        replace_spaces_with_underscores=bool(
+            options.get("replace_spaces_with_underscores", True)
+        ),
+        trim_fasta_values=bool(options.get("trim_fasta_values", True)),
         page_timeout_sec=int(runtime.get("page_timeout_sec", 40)),
         download_timeout_sec=int(runtime.get("download_timeout_sec", 1800)),
         poll_interval_sec=int(runtime.get("poll_interval_sec", 5)),
