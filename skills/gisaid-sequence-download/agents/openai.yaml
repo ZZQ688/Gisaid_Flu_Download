@@ -1,4 +1,0 @@
-interface:
-  display_name: "GISAID 序列下载"
-  short_description: "配置、预检、执行并恢复 GISAID EpiFlu 下载"
-  default_prompt: "Use $gisaid-sequence-download to preflight and safely run or resume a GISAID EpiFlu sequence download."
