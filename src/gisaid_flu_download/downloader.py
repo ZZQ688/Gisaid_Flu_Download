@@ -60,6 +60,7 @@ class DownloadConfig:
     virus_type: VirusType = "A"
     h_types: Sequence[str] = field(default_factory=list)
     n_types: Sequence[str] = field(default_factory=list)
+    a_lineages: Sequence[str] = field(default_factory=list)
     b_lineages: Sequence[str] = field(default_factory=list)
     hosts: Sequence[str] = field(default_factory=list)
     submit_labs: Sequence[str] = field(default_factory=list)
@@ -425,11 +426,17 @@ class GisaidEpiFluDownloader:
                     n_select.select_by_value(v)
                     self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
 
-        if self.cfg.virus_type == "B" and self.cfg.b_lineages:
-            b_select = self._filter_select_by_label("Lineage")
-            b_select.deselect_all()
-            for v in self.cfg.b_lineages:
-                b_select.select_by_value(v)
+        lineages: Sequence[str] = []
+        if self.cfg.virus_type == "B":
+            lineages = self.cfg.b_lineages
+        elif self.cfg.virus_type == "A" and self._is_h1n1_or_h3n2():
+            lineages = self.cfg.a_lineages
+
+        if lineages:
+            lineage_select = self._filter_select_by_label("Lineage")
+            lineage_select.deselect_all()
+            for v in lineages:
+                lineage_select.select_by_value(v)
                 self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
 
         if self.cfg.tpe_submissions:
@@ -439,6 +446,16 @@ class GisaidEpiFluDownloader:
                 self._wait_overlay_gone(timeout=self.cfg.page_timeout_sec)
 
         LOG.info("Filter criteria applied.")
+
+    def _is_h1n1_or_h3n2(self) -> bool:
+        """Return True when the A-subtype filters select H1N1 or H3N2.
+
+        GISAID only exposes a Lineage filter for influenza A when the subtype
+        is H1N1 or H3N2, so ``a_lineages`` is only applied in those cases.
+        """
+        h = set(self.cfg.h_types)
+        n = set(self.cfg.n_types)
+        return ("1" in h and "1" in n) or ("3" in h and "2" in n)
 
     # def _set_collection_dates(self, start: str, end: str) -> None:
     #     start_dt = _parse_date(start)
@@ -1072,6 +1089,7 @@ def load_download_config(config_file: Path) -> DownloadConfig:
         virus_type=str(filters.get("virus_type", "A")),
         h_types=filters.get("h_types", ["1"]),
         n_types=filters.get("n_types", ["1"]),
+        a_lineages=filters.get("a_lineages", []),
         b_lineages=filters.get("b_lineages", []),
         hosts=filters.get("hosts", ["Human"]),
         submit_labs=filters.get("submit_labs", []),

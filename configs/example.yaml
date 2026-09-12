@@ -30,6 +30,9 @@ filters:
   h_types: ["1"]
   # N subtype values (e.g. "1"); empty list selects all.
   n_types: ["1"]
+  # Influenza A lineage values (e.g. "pdm09"); only used when virus_type is "A"
+  # and the subtype is H1N1 or H3N2.
+  a_lineages: []
   # Influenza B lineage values (e.g. "Victoria"); only used when virus_type is "B".
   b_lineages: []
   # Hosts to filter by visible text (e.g. "Human"). Empty list applies no host filter.
