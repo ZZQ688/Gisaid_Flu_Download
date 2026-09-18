@@ -3,6 +3,8 @@
 
 credentials:
   # GISAID account used for EpiFlu access.
+  #username: username
+  #password: 123456
   username: YOUR_GISAID_USERNAME
   password: YOUR_GISAID_PASSWORD
 
