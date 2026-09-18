@@ -9,15 +9,11 @@ Automate GISAID EpiFlu with Selenium and Microsoft Edge: filter records by virus
 ├── configs/
 │   ├── example.yaml          # Sanitized config template safe to commit
 │   └── local/                # Local configs, ignored by Git
-├── skills/
-│   └── gisaid-sequence-download/ # Project-level sequence download skill
 ├── src/gisaid_flu_download/
 │   ├── downloader.py         # EpiFlu download workflow
 │   ├── merger.py             # Metadata/FASTA merge tooling
 │   └── pipeline.py           # Download-then-merge pipeline
-├── tests/                    # Automated regression tests
-├── pyproject.toml            # Dependencies, packaging, and entry points
-└── AGENTS.md                 # Contribution guidelines
+└── pyproject.toml            # Dependencies, packaging, and entry points
 ```
 
 Runtime data should default to `data/`, which never enters Git.
