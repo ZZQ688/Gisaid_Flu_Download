@@ -16,8 +16,6 @@ Automate GISAID EpiFlu with Selenium and Microsoft Edge: filter records by virus
 └── pyproject.toml            # Dependencies, packaging, and entry points
 ```
 
-Runtime data should default to `data/`, which never enters Git.
-
 ## Installation
 
 You need Conda, Microsoft Edge, and a GISAID account with EpiFlu access. On first use, create the environment and install the project:
