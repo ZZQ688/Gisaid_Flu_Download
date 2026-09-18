@@ -18,7 +18,7 @@ Automate GISAID EpiFlu with Selenium and Microsoft Edge: filter records by virus
 
 ## Installation
 
-You need Conda, Microsoft Edge, and a GISAID account with EpiFlu access. On first use, create the environment and install the project:
+You need Python, Microsoft Edge, and a GISAID account with EpiFlu access. Conda is one supported way to create the environment:
 
 ```bash
 conda create -n gisaid_flu_download python=3.10 pip -y
@@ -26,17 +26,60 @@ conda activate gisaid_flu_download
 python -m pip install -e '.[dev]'
 ```
 
-Selenium normally manages a compatible EdgeDriver automatically, so the Edge browser is the only thing you must install separately.
+Conda is optional. To use the Python standard-library `venv` instead, install Python 3.10 or later and run:
+
+Linux/macOS:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev]'
+```
+
+Windows PowerShell:
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev]'
+```
 
 ### Microsoft Edge WebDriver
 
-If Selenium Manager cannot download the driver for you (for example on an offline or restricted machine), install the matching Microsoft Edge WebDriver manually from the official page:
+Install [Microsoft Edge](https://www.microsoft.com/edge) on the machine running this project. The browser and Microsoft Edge WebDriver (`msedgedriver`, or `msedgedriver.exe` on Windows) are separate components.
 
-https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/
+#### Automatic driver setup
 
-Download the driver whose version matches your installed Edge. Find your Edge version at `edge://version/`, then place the `msedgedriver` executable on your `PATH` (or pass it to Selenium via `EdgeService(executable_path=...)`). The browser itself can be installed from:
+[Selenium Manager](https://www.selenium.dev/documentation/selenium_manager/) is included in Selenium 4.6 and later. The project declares `selenium>=4.6`, so after the installation command above you can run `gisaid-run` directly. When no driver is supplied, Selenium Manager can discover, download, and cache a compatible EdgeDriver. Initial driver resolution and download require access to Microsoft's download services; a proxy or firewall can prevent this. No driver path is needed in the YAML for automatic setup.
 
-https://www.microsoft.com/edge
+#### Manual driver setup
+
+If automatic setup fails or the machine cannot reach the driver download service:
+
+1. Open `edge://settings/help` in Edge and note the four-part browser version.
+2. Download [Microsoft Edge WebDriver](https://developer.microsoft.com/microsoft-edge/tools/webdriver/) for your operating system and architecture. The **first three parts** of the driver and browser version numbers must match, as specified in [Microsoft's instructions](https://learn.microsoft.com/en-us/microsoft-edge/webdriver/). For example, `128.0.2739.79` and `128.0.2739.84` are compatible. Choose a matching build, which may differ from the latest driver offered.
+3. Extract the archive. On Linux/macOS, ensure the executable has execute permission (`chmod +x /absolute/path/to/msedgedriver`). Add the **directory containing the executable** to `PATH`, then reopen the terminal or IDE used to launch the project.
+4. In that same terminal, run `msedgedriver --version` and compare it with Edge's version. Use `command -v msedgedriver` on Linux/macOS or `where.exe msedgedriver` on Windows to check which executable is found. Update stale drivers after Edge updates.
+
+Alternatively, with Python Selenium 4.26 or later, set `SE_EDGEDRIVER` to the **full executable path**. This bypasses Selenium Manager and does not require adding the driver to `PATH`:
+
+Linux/macOS:
+
+```bash
+export SE_EDGEDRIVER="/absolute/path/to/msedgedriver"
+gisaid-run configs/local/H1N1.yaml
+```
+
+Windows PowerShell:
+
+```powershell
+$env:SE_EDGEDRIVER = "C:\tools\edgedriver\msedgedriver.exe"
+gisaid-run configs/local/H1N1.yaml
+```
+
+Replace the example path with your extracted executable's location and launch the project from the same terminal. The project currently has no YAML field for the driver path; use `PATH` or `SE_EDGEDRIVER`. An explicit `SE_EDGEDRIVER` takes precedence over automatic discovery, so update it when moving or replacing the driver.
 
 ## Configuration
 

@@ -9,7 +9,7 @@ description = "Automate GISAID EpiFlu downloads and merge downloaded batches"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "selenium>=4.0",
+    "selenium>=4.6",
     "PyYAML>=6.0",
     "pandas>=2.0",
     "xlrd>=2.0",
